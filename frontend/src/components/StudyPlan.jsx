@@ -5,6 +5,8 @@ export default function StudyPlan({ studentId, planData, refreshAll }) {
   const [form, setForm] = useState({
     program: 'Computer Science', version: '2026', core: 30, major: 45, free: 6
   });
+  const [hasDeleted, setHasDeleted] = useState(false);
+  const [deletedAt, setDeletedAt] = useState(null);
 
   useEffect(() => {
     if (planData) {
@@ -12,6 +14,26 @@ export default function StudyPlan({ studentId, planData, refreshAll }) {
       const major = planData.categories.find(c => c.name === "Major")?.requiredCredits || 0;
       const free = planData.categories.find(c => c.name === "Free")?.requiredCredits || 0;
       setForm({ program: planData.program || '', version: planData.version || '', core, major, free });
+    }
+    // If no planData, check whether a deleted plan exists so we can show Restore button
+    if (!planData && studentId) {
+      (async () => {
+        try {
+          const res = await fetch(`${API_BASE}/studyplan/student/${studentId}/deleted`);
+          if (!res.ok) {
+            setHasDeleted(false);
+            return;
+          }
+          const json = await res.json();
+          setHasDeleted(!!json.deleted);
+          setDeletedAt(json.deletedAt ? new Date(json.deletedAt) : null);
+        } catch (err) {
+          setHasDeleted(false);
+        }
+      })();
+    } else {
+      setHasDeleted(false);
+      setDeletedAt(null);
     }
   }, [planData]);
 
@@ -60,6 +82,20 @@ export default function StudyPlan({ studentId, planData, refreshAll }) {
   }
 };
 
+  const restorePlan = async () => {
+    if (!window.confirm("ต้องการคืน Study Plan ที่ลบไว้หรือไม่?")) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/studyplan/student/${studentId}/restore`, { method: 'POST' });
+      if (!res.ok) throw new Error('restore failed');
+      alert('คืน Study Plan เรียบร้อย');
+      refreshAll();
+    } catch (err) {
+      console.error(err);
+      alert('ไม่สามารถคืนแผนได้');
+    }
+  };
+
   return (
     <section className="card">
       <h2>Study Plan (CRUD)</h2>
@@ -95,9 +131,13 @@ export default function StudyPlan({ studentId, planData, refreshAll }) {
         <button className="btn" onClick={savePlan}>บันทึก / อัปเดต Study Plan</button>
         <button className="btn ghost" onClick={refreshAll}>โหลด Study Plan ซ้ำ</button>
         <button className="btn danger" onClick={softDeletePlan}>ลบแผน (Soft Delete)</button>
+        {hasDeleted && <button className="btn" onClick={restorePlan}>คืนแผน (Restore)</button>}
       </div>
 
       <div style={{ marginTop: '12px' }}>
+        {hasDeleted && (
+          <div style={{ marginBottom: 8 }} className="mini">แผนถูกลบเมื่อ: <b>{deletedAt ? deletedAt.toLocaleString() : 'ไม่ทราบเวลา'}</b></div>
+        )}
         <div className="mini"><b>Mongo Document Preview:</b></div>
         <pre style={{ background: '#0b1220', color: '#e5e7eb', padding: '12px', borderRadius: '14px', overflow: 'auto', border: '1px solid rgba(255,255,255,.06)' }}>
           {planData ? JSON.stringify(planData, null, 2) : "ยังไม่ได้โหลดข้อมูล"}

@@ -23,7 +23,7 @@ async function createUser(data) {
     return user;
 }
 async function findUserByEmail(email) {
-    return prismaClient_1.default.user.findUnique({ where: { email } });
+    return prismaClient_1.default.user.findFirst({ where: { email, isDeleted: false } });
 }
 async function getUserSafeById(id) {
     return prismaClient_1.default.user.findFirst({

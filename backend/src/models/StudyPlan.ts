@@ -14,7 +14,8 @@ const StudyPlanSchema = new Schema(
     program: { type: String, required: true },
     version: { type: String, required: true },
     categories: { type: [CategorySchema], default: [] },
-    isDeleted: { type: Boolean, default: false }
+      isDeleted: { type: Boolean, default: false },
+      deletedAt: { type: Date, default: null }
   },
   { timestamps: true }
 );

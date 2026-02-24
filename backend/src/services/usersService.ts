@@ -17,7 +17,7 @@ export async function createUser(data: { email: string; password: string; fullNa
 }
 
 export async function findUserByEmail(email: string) {
-  return prisma.user.findUnique({ where: { email } });
+  return prisma.user.findFirst({ where: { email, isDeleted: false } });
 }
 
 export async function getUserSafeById(id: number) {

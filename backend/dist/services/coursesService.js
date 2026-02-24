@@ -10,5 +10,5 @@ async function listCourses() {
     return prismaClient_1.default.course.findMany({ where: { isDeleted: false }, orderBy: { code: 'asc' } });
 }
 async function getCourseById(id) {
-    return prismaClient_1.default.course.findUnique({ where: { id } });
+    return prismaClient_1.default.course.findFirst({ where: { id, isDeleted: false } });
 }

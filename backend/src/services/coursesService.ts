@@ -5,5 +5,5 @@ export async function listCourses() {
 }
 
 export async function getCourseById(id: number) {
-  return prisma.course.findUnique({ where: { id } });
+  return prisma.course.findFirst({ where: { id, isDeleted: false } });
 }

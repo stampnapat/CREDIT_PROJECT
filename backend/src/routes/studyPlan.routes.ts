@@ -4,6 +4,15 @@ import { StudyPlanModel } from "../models/StudyPlan";
 
 export const studyPlanRouter = Router();
 
+function sanitizeStudyPlan(doc: any) {
+  if (!doc) return doc;
+  const out: any = JSON.parse(JSON.stringify(doc));
+  if (Array.isArray(out.categories)) {
+    out.categories = out.categories.map((c: any) => ({ name: c.name, requiredCredits: c.requiredCredits }));
+  }
+  return out;
+}
+
 const categorySchema = z.object({
   name: z.string().min(1),
   requiredCredits: z.number().nonnegative()
@@ -30,11 +39,19 @@ studyPlanRouter.post("/", async (req: Request, res: Response) => {
     if (existing) {
       existing.program = parsed.data.program;
       existing.version = parsed.data.version;
-      existing.categories = parsed.data.categories;
+      // Deduplicate categories by name (case-insensitive) and set
+      const deduped = Array.isArray(parsed.data.categories)
+        ? parsed.data.categories.filter(
+            (c, i, arr) => arr.findIndex(x => x.name.toLowerCase() === c.name.toLowerCase()) === i
+          )
+        : [];
+
+      // Use Mongoose `set` to replace the DocumentArray with plain objects
+      existing.set("categories", deduped);
       existing.isDeleted = false;
 
       await existing.save();
-      return res.json(existing);
+      return res.json(sanitizeStudyPlan(existing));
     }
 
     const created = await StudyPlanModel.create({
@@ -42,7 +59,7 @@ studyPlanRouter.post("/", async (req: Request, res: Response) => {
       isDeleted: false
     });
 
-    return res.status(201).json(created);
+    return res.status(201).json(sanitizeStudyPlan(created));
 
   } catch (err: any) {
     console.error("Create/Update error:", err);
@@ -67,7 +84,7 @@ studyPlanRouter.put("/:id", async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Study plan not found" });
     }
 
-    return res.json(updated);
+    return res.json(sanitizeStudyPlan(updated));
 
   } catch (err: any) {
     return res.status(500).json({ message: err.message });
@@ -83,6 +100,18 @@ studyPlanRouter.post(
     }
 
     try {
+      // Prevent adding a category with the same name
+      const plan = await StudyPlanModel.findOne({ studentId: req.params.studentId, isDeleted: false });
+      if (!plan) return res.status(404).json({ message: "Study plan not found" });
+
+      const exists = plan.categories.some(
+        (c: any) => c.name.toLowerCase() === parsed.data.name.toLowerCase()
+      );
+
+      if (exists) {
+        return res.status(400).json({ message: "Category already exists" });
+      }
+
       const updated = await StudyPlanModel.findOneAndUpdate(
         { studentId: req.params.studentId, isDeleted: false },
         { $push: { categories: parsed.data } },
@@ -93,7 +122,7 @@ studyPlanRouter.post(
         return res.status(404).json({ message: "Study plan not found" });
       }
 
-      return res.json(updated);
+      return res.json(sanitizeStudyPlan(updated));
 
     } catch (err: any) {
       return res.status(500).json({ message: err.message });
@@ -139,7 +168,7 @@ studyPlanRouter.delete(
           isDeleted: false
         },
         {
-          $set: { isDeleted: true }
+          $set: { isDeleted: true, deletedAt: new Date() }
         },
         { new: true }
       );
@@ -160,6 +189,39 @@ studyPlanRouter.delete(
   }
 );
 
+// Restore soft-deleted study plan
+studyPlanRouter.post(
+  "/student/:studentId/restore",
+  async (req: Request, res: Response) => {
+    try {
+      const restored = await StudyPlanModel.findOneAndUpdate(
+        { studentId: req.params.studentId, isDeleted: true },
+        { $set: { isDeleted: false, deletedAt: null } },
+        { new: true }
+      );
+
+      if (!restored) return res.status(404).json({ message: "No deleted study plan found" });
+
+      return res.json({ message: "Restored", studentId: req.params.studentId });
+    } catch (err: any) {
+      return res.status(500).json({ message: err.message });
+    }
+  }
+);
+
+// Check whether a deleted study plan exists for a student
+studyPlanRouter.get(
+  "/student/:studentId/deleted",
+  async (req: Request, res: Response) => {
+      try {
+        const doc = await StudyPlanModel.findOne({ studentId: req.params.studentId, isDeleted: true }).lean();
+        return res.json({ deleted: !!doc, deletedAt: doc ? doc.deletedAt : null });
+    } catch (err: any) {
+      return res.status(500).json({ message: err.message });
+    }
+  }
+);
+
 studyPlanRouter.get("/:studentId", async (req: Request, res: Response) => {
   try {
     const doc = await StudyPlanModel.findOne({
@@ -170,8 +232,16 @@ studyPlanRouter.get("/:studentId", async (req: Request, res: Response) => {
     if (!doc) {
       return res.status(404).json({ message: "Study plan not found" });
     }
+    // Create a plain copy and remove internal subdocument _id fields from categories before returning
+    const out: any = JSON.parse(JSON.stringify(doc));
+    if (Array.isArray(out.categories)) {
+      out.categories = out.categories.map((c: any) => ({
+        name: c.name,
+        requiredCredits: c.requiredCredits
+      }));
+    }
 
-    return res.json(doc);
+    return res.json(out);
 
   } catch (err: any) {
     return res.status(500).json({ message: err.message });
