@@ -9,6 +9,7 @@ services:
       - mysql
       - mongo
     environment:
+      PORT: "8080"
       DATABASE_URL: "mysql://root:root@mysql:3306/college_db"
       MONGO_URL: "mongodb://mongo:27017/college_progress"
       JWT_SECRET: "change-this-secret"

@@ -1,4 +1,5 @@
 import prisma from '../prismaClient';
+import { EnrollmentStatus } from '@prisma/client';
 
 export async function enrollUser(userId: number, courseId: number) {
   return prisma.enrollment.create({
@@ -22,9 +23,13 @@ export async function listAllEnrollments() {
 }
 
 export async function updateEnrollment(id: number, data: { status?: string; grade?: string; creditsEarned?: number }) {
+  const updateData: any = {};
+  if (data.status !== undefined) updateData.status = data.status as EnrollmentStatus;
+  if (data.grade !== undefined) updateData.grade = data.grade;
+  if (data.creditsEarned !== undefined) updateData.creditsEarned = data.creditsEarned;
   return prisma.enrollment.update({
     where: { id },
-    data,
+    data: updateData,
     include: { course: true }
   });
 }

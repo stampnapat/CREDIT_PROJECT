@@ -38,7 +38,7 @@ export async function listAllUsers() {
 export async function updateUser(id: number, data: { fullName?: string; role?: string }) {
   const updateData: any = {};
   if (data.fullName !== undefined) updateData.fullName = data.fullName;
-  if (data.role !== undefined) updateData.role = data.role;
+  if (data.role !== undefined) updateData.role = data.role as Role;
   return prisma.user.update({
     where: { id },
     data: updateData,
