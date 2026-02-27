@@ -112,7 +112,7 @@ export default function EnrollmentManage({ studentId }) {
 
   return (
     <section className="card">
-      <h2>จัดการการลงทะเบียน (MySQL — CRUD)</h2>
+      <h2>✏️ จัดการการลงทะเบียน</h2>
       <p className="sub">ลงทะเบียน / แก้ไขสถานะ / แก้เกรด / ลบ Enrollment ในฐานข้อมูล MySQL</p>
 
       <div className="grid-2">
@@ -140,21 +140,29 @@ export default function EnrollmentManage({ studentId }) {
         <button className="btn" onClick={handleEnroll}>ลงทะเบียน (Create Enrollment)</button>
       </div>
 
-      <div style={{ marginTop: '14px' }}>
-        <h3 style={{ margin: '0 0 10px 0', fontSize: '15px' }}>รายการลงทะเบียนทั้งหมด (MySQL)</h3>
+      <div className="table-wrap">
+        <div className="table-header">
+          <h3>📋 รายการลงทะเบียนทั้งหมด</h3>
+          <span className="count">{enrollments.length} รายการ</span>
+        </div>
         <table>
           <thead>
             <tr>
-              <th>ID</th><th>User</th><th>วิชา</th><th>สถานะ</th><th>เกรด</th><th>วันลงทะเบียน</th><th>จัดการ</th>
+              <th>ID</th><th>User</th><th>วิชา</th><th>สถานะ</th><th>เกรด</th><th>วันที่</th><th>จัดการ</th>
             </tr>
           </thead>
           <tbody>
             {enrollments.length === 0 ? (
-              <tr><td colSpan="7" style={{ textAlign: 'center' }}>ยังไม่มีการลงทะเบียน</td></tr>
+              <tr><td colSpan="7">
+                <div className="empty-state">
+                  <div className="empty-icon">📭</div>
+                  <p>ยังไม่มีการลงทะเบียน</p>
+                </div>
+              </td></tr>
             ) : (
               enrollments.map(e => (
                 <tr key={e.id}>
-                  <td>{e.id}</td>
+                  <td><span className="tag">{e.id}</span></td>
                   <td>
                     <b>{e.user?.fullName || e.user?.email || e.userId}</b>
                     <br /><span className="mini">ID: {e.userId}</span>
@@ -164,12 +172,14 @@ export default function EnrollmentManage({ studentId }) {
                     <br /><span className="mini">{e.course?.title}</span>
                   </td>
                   <td><span className={statusClass(e.status)}>{statusLabel(e.status)}</span></td>
-                  <td>{e.grade || '-'}</td>
+                  <td><b>{e.grade || '-'}</b></td>
                   <td className="mini">{new Date(e.enrolledAt).toLocaleDateString('th-TH')}</td>
                   <td>
-                    <button onClick={() => handleUpdateStatus(e.id, e.status)}>สถานะ</button>
-                    <button onClick={() => handleUpdateGrade(e.id, e.grade)}>เกรด</button>
-                    <button onClick={() => handleDelete(e.id)}>ลบ</button>
+                    <div className="row-actions">
+                      <button className="btn-sm" onClick={() => handleUpdateStatus(e.id, e.status)}>🔄 สถานะ</button>
+                      <button className="btn-sm" onClick={() => handleUpdateGrade(e.id, e.grade)}>📝 เกรด</button>
+                      <button className="btn-sm danger" onClick={() => handleDelete(e.id)}>🗑️</button>
+                    </div>
                   </td>
                 </tr>
               ))

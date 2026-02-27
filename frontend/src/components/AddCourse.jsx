@@ -5,8 +5,8 @@ export default function AddCourse({ studentId, refreshAll }) {
   const [coursesMaster, setCoursesMaster] = useState([]);
   const [completedList, setCompletedList] = useState([]);
   
-  const CATEGORY_OPTIONS = [
-    'Major',
+  const MAJOR_OPTIONS = ['Major'];
+  const GENED_OPTIONS = [
     'Wellness',
     'Entrepreneurship',
     'Language and Communication',
@@ -94,8 +94,8 @@ export default function AddCourse({ studentId, refreshAll }) {
 
   return (
     <section className="card">
-      <h2>เพิ่มวิชาที่เรียนแล้ว (Completed Course)</h2>
-      <p className="sub">บันทึกวิชาที่เรียนจบแล้วลงฐานข้อมูล</p>
+      <h2>📝 เพิ่มวิชาที่เรียนแล้ว</h2>
+      <p className="sub">บันทึกวิชาที่เรียนจบแล้วลงฐานข้อมูล MongoDB</p>
 
       <div className="grid-2">
         <div style={{ gridColumn: '1 / -1' }}>
@@ -116,7 +116,12 @@ export default function AddCourse({ studentId, refreshAll }) {
         <div>
           <label>หมวดหมู่ (อ้างอิงตาม Study Plan)</label>
           <select value={form.category} onChange={e => setForm({...form, category: e.target.value})}>
-            {CATEGORY_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+            <optgroup label="🎓 วิชาเอก">
+              {MAJOR_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+            </optgroup>
+            <optgroup label="📚 หมวดศึกษาทั่วไป (GenEd)">
+              {GENED_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+            </optgroup>
           </select>
         </div>
         <div>
@@ -139,8 +144,11 @@ export default function AddCourse({ studentId, refreshAll }) {
         <button className="btn" onClick={addCompleted}>บันทึกรายวิชา</button>
       </div>
 
-      <div style={{ marginTop: '14px' }}>
-        <h3 style={{ margin: '0 0 10px 0', fontSize: '15px' }}>รายการวิชาที่เรียนแล้ว</h3>
+      <div className="table-wrap">
+        <div className="table-header">
+          <h3>✅ รายการวิชาที่เรียนแล้ว</h3>
+          <span className="count">{completedList.length} วิชา</span>
+        </div>
         <table>
           <thead>
             <tr>
@@ -149,15 +157,22 @@ export default function AddCourse({ studentId, refreshAll }) {
           </thead>
           <tbody>
             {completedList.length === 0 ? (
-              <tr><td colSpan="6" style={{ textAlign: 'center' }}>ยังไม่มีวิชาที่บันทึก</td></tr>
+              <tr><td colSpan="6">
+                <div className="empty-state">
+                  <div className="empty-icon">📚</div>
+                  <p>ยังไม่มีวิชาที่บันทึก</p>
+                </div>
+              </td></tr>
             ) : (
               completedList.map(c => (
                 <tr key={c._id}>
                   <td><b>{c.courseId}</b><br/><span className="mini">{c.courseName}</span></td>
-                  <td>{c.category}</td><td>{c.credits}</td><td>{c.grade}</td><td>{c.term}</td>
+                  <td><span className="tag">{c.category === 'Major' ? '🎓' : '📚'} {c.category}</span></td><td>{c.credits}</td><td>{c.grade}</td><td>{c.term}</td>
                   <td>
-                    <button onClick={() => updateGrade(c._id, c.grade)}>แก้ไข</button>
-                    <button onClick={() => softDeleteCourse(c._id)}>ลบ</button>
+                    <div className="row-actions">
+                      <button className="btn-sm" onClick={() => updateGrade(c._id, c.grade)}>✏️ เกรด</button>
+                      <button className="btn-sm danger" onClick={() => softDeleteCourse(c._id)}>🗑️ ลบ</button>
+                    </div>
                   </td>
                 </tr>
               ))

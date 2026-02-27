@@ -121,8 +121,8 @@ export default function StudyPlan({ studentId, planData, refreshAll }) {
 
   return (
     <section className="card">
-      <h2>Study Plan (CRUD)</h2>
-      <p className="sub">ตั้งค่าแผนหน่วยกิต — วิชาเอก (Major) + หมวดศึกษาทั่วไป (GenEd)</p>
+      <h2>🎯 Study Plan</h2>
+      <p className="sub">ตั้งค่าแผนหน่วยกิต — วิชาเอก (Major) + หมวดศึกษาทั่วไป (GenEd) — MongoDB</p>
 
       <div className="grid-2">
         <div>
@@ -168,8 +168,8 @@ export default function StudyPlan({ studentId, planData, refreshAll }) {
         {hasDeleted && (
           <div style={{ marginBottom: 8 }} className="mini">แผนถูกลบเมื่อ: <b>{deletedAt ? deletedAt.toLocaleString() : 'ไม่ทราบเวลา'}</b></div>
         )}
-        <div className="mini"><b>Mongo Document Preview:</b></div>
-        <pre style={{ background: '#0b1220', color: '#e5e7eb', padding: '12px', borderRadius: '14px', overflow: 'auto', border: '1px solid rgba(255,255,255,.06)' }}>
+        <div className="mini" style={{ marginBottom: 6 }}>🗄️ <b>MongoDB Document Preview:</b></div>
+        <pre style={{ background: '#0f172a', color: '#a7f3d0', padding: '16px', borderRadius: '14px', overflow: 'auto', border: '1px solid rgba(16,185,129,.15)', fontSize: 12, lineHeight: 1.6 }}>
           {planData ? JSON.stringify(planData, null, 2) : "ยังไม่ได้โหลดข้อมูล"}
         </pre>
       </div>

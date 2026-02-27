@@ -80,7 +80,7 @@ export default function CourseManage() {
 
   return (
     <section className="card">
-      <h2>จัดการรายวิชา (MySQL — CRUD)</h2>
+      <h2>📚 จัดการรายวิชา</h2>
       <p className="sub">เพิ่ม / แก้ไข / ลบ วิชาในฐานข้อมูล MySQL ผ่าน Prisma ORM</p>
 
       <div className="grid-2">
@@ -109,8 +109,11 @@ export default function CourseManage() {
         {editingId && <button className="btn secondary" onClick={resetForm}>ยกเลิกการแก้ไข</button>}
       </div>
 
-      <div style={{ marginTop: '14px' }}>
-        <h3 style={{ margin: '0 0 10px 0', fontSize: '15px' }}>รายวิชาทั้งหมด (MySQL)</h3>
+      <div className="table-wrap">
+        <div className="table-header">
+          <h3>📋 รายวิชาทั้งหมด</h3>
+          <span className="count">{courses.length} วิชา</span>
+        </div>
         <table>
           <thead>
             <tr>
@@ -119,18 +122,25 @@ export default function CourseManage() {
           </thead>
           <tbody>
             {courses.length === 0 ? (
-              <tr><td colSpan="6" style={{ textAlign: 'center' }}>ไม่มีวิชาในระบบ</td></tr>
+              <tr><td colSpan="6">
+                <div className="empty-state">
+                  <div className="empty-icon">📭</div>
+                  <p>ยังไม่มีวิชาในระบบ</p>
+                </div>
+              </td></tr>
             ) : (
               courses.map(c => (
                 <tr key={c.id}>
-                  <td>{c.id}</td>
+                  <td><span className="tag">{c.id}</span></td>
                   <td><b>{c.code}</b></td>
                   <td>{c.title}</td>
                   <td className="mini">{c.description || '-'}</td>
-                  <td>{c.credits}</td>
+                  <td><span className="pill">{c.credits} หน่วยกิต</span></td>
                   <td>
-                    <button onClick={() => startEdit(c)}>แก้ไข</button>
-                    <button onClick={() => handleDelete(c.id)}>ลบ</button>
+                    <div className="row-actions">
+                      <button className="btn-sm" onClick={() => startEdit(c)}>✏️ แก้ไข</button>
+                      <button className="btn-sm danger" onClick={() => handleDelete(c.id)}>🗑️ ลบ</button>
+                    </div>
                   </td>
                 </tr>
               ))

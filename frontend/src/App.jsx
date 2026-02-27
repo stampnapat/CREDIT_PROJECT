@@ -65,11 +65,11 @@ function App() {
             <div className="logo" aria-hidden="true"></div>
             <div>
               <h1>KU Credit Tracker</h1>
-              <p>ระบบเช็คหน่วยกิต & แผนการเรียน (Integrated with Backend)</p>
+              <p>ระบบติดตามหน่วยกิต — MySQL + MongoDB</p>
             </div>
           </div>
           <div className="top-actions">
-            <span className="chip">Online</span>
+            <span className="chip">● Online</span>
           </div>
         </div>
       </header>
@@ -98,7 +98,7 @@ function App() {
       )}
 
       <div className="footer">
-        © KU Credit Tracker (Backend Variable Matched Version)
+        🎓 KU Credit Tracker — โปรเจค 01204351 Database Systems — Built with React, Express, MySQL & MongoDB
       </div>
     </div>
   );

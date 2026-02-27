@@ -68,11 +68,14 @@ export default function UserManage() {
 
   return (
     <section className="card">
-      <h2>จัดการผู้ใช้งาน (MySQL — CRUD)</h2>
+      <h2>👤 จัดการผู้ใช้งาน</h2>
       <p className="sub">ดู / แก้ไข / ลบ ข้อมูลผู้ใช้ในฐานข้อมูล MySQL ผ่าน Prisma ORM</p>
 
-      <div style={{ marginTop: '14px' }}>
-        <h3 style={{ margin: '0 0 10px 0', fontSize: '15px' }}>รายชื่อผู้ใช้ทั้งหมด (MySQL)</h3>
+      <div className="table-wrap">
+        <div className="table-header">
+          <h3>📋 รายชื่อผู้ใช้ทั้งหมด</h3>
+          <span className="count">{users.length} คน</span>
+        </div>
         <table>
           <thead>
             <tr>
@@ -81,19 +84,26 @@ export default function UserManage() {
           </thead>
           <tbody>
             {users.length === 0 ? (
-              <tr><td colSpan="6" style={{ textAlign: 'center' }}>ไม่มีผู้ใช้ในระบบ</td></tr>
+              <tr><td colSpan="6">
+                <div className="empty-state">
+                  <div className="empty-icon">👥</div>
+                  <p>ไม่มีผู้ใช้ในระบบ</p>
+                </div>
+              </td></tr>
             ) : (
               users.map(u => (
                 <tr key={u.id}>
-                  <td>{u.id}</td>
+                  <td><span className="tag">{u.id}</span></td>
                   <td>{u.email}</td>
                   <td><b>{u.fullName || '-'}</b></td>
                   <td><span className={roleClass(u.role)}>{u.role}</span></td>
                   <td className="mini">{new Date(u.createdAt).toLocaleDateString('th-TH')}</td>
                   <td>
-                    <button onClick={() => handleUpdateName(u.id, u.fullName)}>แก้ชื่อ</button>
-                    <button onClick={() => handleUpdateRole(u.id, u.role)}>แก้ Role</button>
-                    <button onClick={() => handleDelete(u.id)}>ลบ</button>
+                    <div className="row-actions">
+                      <button className="btn-sm" onClick={() => handleUpdateName(u.id, u.fullName)}>✏️ ชื่อ</button>
+                      <button className="btn-sm" onClick={() => handleUpdateRole(u.id, u.role)}>🔑 Role</button>
+                      <button className="btn-sm danger" onClick={() => handleDelete(u.id)}>🗑️</button>
+                    </div>
                   </td>
                 </tr>
               ))

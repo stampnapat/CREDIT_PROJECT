@@ -92,39 +92,52 @@ export default function Auth({ setStudentId }) {
   return (
     <section className="auth-wrap">
       <div className="hero">
+        <div style={{ fontSize: 48, marginBottom: 12 }}>🎓</div>
         <h2>ยินดีต้อนรับสู่ KU Credit Tracker</h2>
-        <p>เว็บสำหรับติดตามหน่วยกิตและเช็คว่า “เรียนอะไรแล้ว / เหลืออะไร” เชื่อมต่อกับ Backend อัตโนมัติ</p>
+        <p>เว็บแอปสำหรับติดตามหน่วยกิต เช็คว่า "เรียนอะไรแล้ว / เหลืออะไร" เชื่อมต่อกับ Backend API อัตโนมัติ</p>
         <ul>
-          <li>Dashboard สรุปหน่วยกิต + progress bar (จากข้อมูลจริง)</li>
-          <li>จัดการรายวิชาและหน่วยกิตตามโครงสร้างหลักสูตร</li>
-          <li>เชื่อมต่อ API Backend 100%</li>
+          <li>📊 Dashboard สรุปหน่วยกิต พร้อมกราฟ</li>
+          <li>📚 จัดการรายวิชาและหน่วยกิตตามหลักสูตร</li>
+          <li>🔗 เชื่อมต่อ MySQL + MongoDB ผ่าน REST API</li>
         </ul>
         <div className="toggle">
-          <button className="btn" onClick={demoLogin}>Login (Demo Data Account)</button>
+          <button className="btn" onClick={demoLogin}>🚀 ทดลองใช้งาน (Demo)</button>
         </div>
       </div>
 
       <div className="card">
-        <h2>{authMode === 'login' ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก'}</h2>
+        <h2 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {authMode === 'login' ? '🔐' : '📋'} {authMode === 'login' ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก'}
+        </h2>
         <p className="sub">จัดการแผนการเรียนและหน่วยกิตของคุณ</p>
 
-        <div className="grid-2">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
-            <label>อีเมล หรือ รหัสนิสิต</label>
+            <label>📧 อีเมล หรือ รหัสนิสิต</label>
             <input value={email} onChange={e => setEmail(e.target.value)} placeholder="เช่น s65xxxxxx@ku.th" />
           </div>
           <div>
-            <label>รหัสผ่าน</label>
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" />
+            <label>🔒 รหัสผ่าน</label>
+            <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••"
+              onKeyDown={e => e.key === 'Enter' && handleAuthAction()} />
           </div>
         </div>
 
-        <div className="form-actions">
-          <button className="btn" onClick={handleAuthAction}>
-            {authMode === 'login' ? 'เข้าสู่ระบบ' : 'ยืนยันการสมัคร'}
+        <div className="form-actions" style={{ marginTop: 20 }}>
+          <button className="btn" style={{ flex: 1 }} onClick={handleAuthAction}>
+            {authMode === 'login' ? '🔓 เข้าสู่ระบบ' : '✅ ยืนยันการสมัคร'}
           </button>
-          <button className="btn ghost" onClick={toggleAuthMode}>
-            {authMode === 'login' ? 'สมัครสมาชิก' : 'กลับไปเข้าสู่ระบบ'}
+        </div>
+        <div style={{ textAlign: 'center', marginTop: 14 }}>
+          <button
+            onClick={toggleAuthMode}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: 'var(--accent)', fontWeight: 600, fontSize: 13,
+              textDecoration: 'underline', textUnderlineOffset: 3
+            }}
+          >
+            {authMode === 'login' ? 'ยังไม่มีบัญชี? สมัครสมาชิก →' : '← มีบัญชีแล้ว? กลับไปเข้าสู่ระบบ'}
           </button>
         </div>
       </div>

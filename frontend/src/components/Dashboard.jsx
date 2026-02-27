@@ -5,17 +5,29 @@ import {
   RadialBarChart, RadialBar
 } from 'recharts';
 
-const COLORS = ['#2d5a3d', '#40916c', '#52b788', '#74c69d', '#95d5b2', '#b7e4c7'];
+const COLORS = ['#059669', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0', '#d1fae5'];
+
+const CATEGORY_ICONS = {
+  'Major': '🎓',
+  'Wellness': '🏃',
+  'Entrepreneurship': '💼',
+  'Language and Communication': '🗣️',
+  'Thai Citizen and Global Citizen': '🌏',
+  'Aesthetics': '🎨',
+};
+const GENED_NAMES = ['Wellness', 'Entrepreneurship', 'Language and Communication', 'Thai Citizen and Global Citizen', 'Aesthetics'];
+const getCatIcon = (name) => CATEGORY_ICONS[name] || '📘';
 
 const CustomTooltip = ({ active, payload }) => {
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
   return (
     <div style={{
-      background: '#fff', border: '1px solid #e8e4dd', borderRadius: 12,
-      padding: '10px 14px', boxShadow: '0 4px 12px rgba(45,90,61,.12)', fontSize: 13
+      background: '#fff', border: '1px solid #d2dfd8', borderRadius: 12,
+      padding: '12px 16px', boxShadow: '0 8px 24px rgba(0,0,0,.1)', fontSize: 13,
+      backdropFilter: 'blur(8px)'
     }}>
-      <div style={{ fontWeight: 900, color: '#2d5a3d', marginBottom: 4 }}>{d.name || d.category}</div>
+      <div style={{ fontWeight: 800, color: '#1b6b3a', marginBottom: 4 }}>{d.name || d.category}</div>
       {d.earned !== undefined && <div>ได้: <b>{d.earned}</b> หน่วยกิต</div>}
       {d.required !== undefined && <div>ต้อง: <b>{d.required}</b> หน่วยกิต</div>}
       {d.remaining !== undefined && <div>เหลือ: <b>{d.remaining}</b> หน่วยกิต</div>}
@@ -69,25 +81,25 @@ export default function Dashboard({ summary }) {
 
   return (
     <section className="card">
-      <h2>Dashboard — ภาพรวมหน่วยกิต</h2>
-      <p className="sub">สรุปหน่วยกิตสะสม (ประมวลผลผ่าน API MongoDB Aggregation)</p>
+      <h2>📊 Dashboard — ภาพรวมหน่วยกิต</h2>
+      <p className="sub">สรุปหน่วยกิตสะสมทั้งหมด ประมวลผลผ่าน MongoDB + REST API</p>
 
       {/* Stat Cards */}
       <div className="stats">
         <div className="stat">
-          <div className="label">หน่วยกิตสะสม (Earned)</div>
+          <div className="label">✅ หน่วยกิตสะสม</div>
           <div className="value">{totalEarned}</div>
-          <div className="hint">คำนวณจาก completed courses</div>
+          <div className="hint">คำนวณจากวิชาที่เรียนจบ</div>
         </div>
         <div className="stat">
-          <div className="label">หน่วยกิตที่ต้องครบ (Required)</div>
+          <div className="label">🎯 เป้าหมาย</div>
           <div className="value">{totalRequired}</div>
-          <div className="hint">มาจาก Study Plan</div>
+          <div className="hint">ตาม Study Plan ที่ตั้งไว้</div>
         </div>
         <div className="stat">
-          <div className="label">หน่วยกิตที่เหลือ (Remaining)</div>
+          <div className="label">📌 คงเหลือ</div>
           <div className="value">{remainingTotal}</div>
-          <div className="hint">Required - Earned (ตามหมวด)</div>
+          <div className="hint">หน่วยกิตที่ต้องเรียนเพิ่ม</div>
         </div>
       </div>
 
@@ -110,7 +122,7 @@ export default function Dashboard({ summary }) {
       {/* Charts Section */}
       {isSetup && (
         <div style={{ marginTop: 20 }}>
-          <h3 style={{ margin: '0 0 14px 0', fontSize: 16, color: '#2d5a3d' }}>📊 กราฟสรุปข้อมูล</h3>
+          <h3 style={{ margin: '0 0 16px 0', fontSize: 16, fontWeight: 800, color: 'var(--text)', letterSpacing: '-.2px' }}>📈 กราฟสรุปข้อมูล</h3>
 
           <div className="chart-grid">
             {/* Donut: Earned vs Remaining */}
@@ -127,8 +139,8 @@ export default function Dashboard({ summary }) {
                     strokeWidth={2}
                     stroke="#fff"
                   >
-                    <Cell fill="#40916c" />
-                    <Cell fill="#e8e4dd" />
+                    <Cell fill="#10b981" />
+                    <Cell fill="#e5efe9" />
                   </Pie>
                   <Tooltip content={<CustomTooltip />} />
                   <Legend
@@ -139,7 +151,7 @@ export default function Dashboard({ summary }) {
                 </PieChart>
               </ResponsiveContainer>
               <div style={{ textAlign: 'center', marginTop: -10 }}>
-                <span style={{ fontSize: 28, fontWeight: 900, color: '#2d5a3d' }}>{pct}%</span>
+                <span style={{ fontSize: 30, fontWeight: 900, color: 'var(--primary)', letterSpacing: '-1px' }}>{pct}%</span>
               </div>
             </div>
 
@@ -173,10 +185,10 @@ export default function Dashboard({ summary }) {
             <div className="chart-title">เปรียบเทียบหน่วยกิต ได้ vs ต้อง (แต่ละหมวด)</div>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={barData} margin={{ top: 10, right: 20, left: 0, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e8e4dd" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5efe9" />
                 <XAxis
                   dataKey="category"
-                  tick={{ fontSize: 11, fontWeight: 700, fill: '#2d5a3d' }}
+                  tick={{ fontSize: 10, fontWeight: 700, fill: '#5a7268' }}
                   interval={0}
                   angle={-20}
                   textAnchor="end"
@@ -189,41 +201,60 @@ export default function Dashboard({ summary }) {
                   iconType="circle"
                   wrapperStyle={{ fontSize: 12, fontWeight: 700, paddingBottom: 8 }}
                 />
-                <Bar dataKey="earned" name="ได้แล้ว" fill="#40916c" radius={[6, 6, 0, 0]} />
-                <Bar dataKey="required" name="ต้องครบ" fill="#b7e4c7" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="earned" name="ได้แล้ว" fill="#10b981" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="required" name="ต้องครบ" fill="#d1fae5" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
       )}
 
-      {/* Per-category cards */}
-      <div style={{ marginTop: 16 }}>
-        <h3 style={{ margin: '0 0 10px 0', fontSize: 15, color: '#2d5a3d' }}>รายละเอียดแต่ละหมวด</h3>
-        <div className="cat-grid">
-          {categoriesList.map((cat, idx) => {
-            const catPct = cat.required === 0 ? 0 : Math.min(100, Math.round((cat.earned / cat.required) * 100));
-            return (
-              <div className="cat" key={idx}>
-                <div className="row">
-                  <div>
-                    <div style={{ fontWeight: 900 }}>{cat.category}</div>
-                    <div className="mini">ได้ {cat.earned} / ต้อง {cat.required}</div>
-                  </div>
-                  {cat.completed
-                    ? <span className="pill">ครบแล้ว ✅</span>
-                    : <span className="pill warn">เหลือ {cat.remaining}</span>
-                  }
+      {/* Per-category cards — grouped Major + GenEd */}
+      {(() => {
+        const majorCats = categoriesList.filter(c => c.category === 'Major');
+        const genedCats = categoriesList.filter(c => GENED_NAMES.includes(c.category));
+        const renderCatCard = (cat, idx) => {
+          const catPct = cat.required === 0 ? 0 : Math.min(100, Math.round((cat.earned / cat.required) * 100));
+          return (
+            <div className="cat" key={idx}>
+              <div className="row">
+                <div>
+                  <div style={{ fontWeight: 900 }}>{getCatIcon(cat.category)} {cat.category}</div>
+                  <div className="mini">ได้ {cat.earned} / ต้อง {cat.required} หน่วยกิต</div>
                 </div>
-                <div className="progress" style={{ height: '10px' }}>
-                  <div className="bar" style={{ width: `${catPct}%` }}></div>
-                </div>
-                <div className="mini" style={{ marginTop: 4, textAlign: 'right' }}>{catPct}%</div>
+                {cat.completed
+                  ? <span className="pill">ครบแล้ว ✅</span>
+                  : <span className="pill warn">เหลือ {cat.remaining}</span>
+                }
               </div>
-            );
-          })}
-        </div>
-      </div>
+              <div className="progress" style={{ height: '10px' }}>
+                <div className="bar" style={{ width: `${catPct}%` }}></div>
+              </div>
+              <div className="mini" style={{ marginTop: 4, textAlign: 'right' }}>{catPct}%</div>
+            </div>
+          );
+        };
+        return (
+          <>
+            {majorCats.length > 0 && (
+              <div style={{ marginTop: 16 }}>
+                <h3 style={{ margin: '0 0 12px 0', fontSize: 15, fontWeight: 800, color: 'var(--text)' }}>🎓 วิชาเอก (Major)</h3>
+                <div className="cat-grid">
+                  {majorCats.map(renderCatCard)}
+                </div>
+              </div>
+            )}
+            {genedCats.length > 0 && (
+              <div style={{ marginTop: 16 }}>
+                <h3 style={{ margin: '0 0 12px 0', fontSize: 15, fontWeight: 800, color: 'var(--text)' }}>📚 หมวดศึกษาทั่วไป (GenEd)</h3>
+                <div className="cat-grid">
+                  {genedCats.map(renderCatCard)}
+                </div>
+              </div>
+            )}
+          </>
+        );
+      })()}
     </section>
   );
 }
