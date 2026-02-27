@@ -26,3 +26,29 @@ export async function getUserSafeById(id: number) {
     select: { id: true, email: true, fullName: true, role: true, createdAt: true, updatedAt: true }
   });
 }
+
+export async function listAllUsers() {
+  return prisma.user.findMany({
+    where: { isDeleted: false },
+    select: { id: true, email: true, fullName: true, role: true, createdAt: true, updatedAt: true },
+    orderBy: { id: 'asc' }
+  });
+}
+
+export async function updateUser(id: number, data: { fullName?: string; role?: string }) {
+  const updateData: any = {};
+  if (data.fullName !== undefined) updateData.fullName = data.fullName;
+  if (data.role !== undefined) updateData.role = data.role;
+  return prisma.user.update({
+    where: { id },
+    data: updateData,
+    select: { id: true, email: true, fullName: true, role: true, createdAt: true, updatedAt: true }
+  });
+}
+
+export async function softDeleteUser(id: number) {
+  return prisma.user.update({
+    where: { id },
+    data: { isDeleted: true }
+  });
+}

@@ -19,7 +19,20 @@ export default function Sidebar({ studentId, version, currentView, setCurrentVie
           ดูวิชาที่เหลือ <small>Remaining</small>
         </button>
         <button className={currentView === 'studyPlan' ? 'active' : ''} onClick={() => setCurrentView('studyPlan')}>
-          จัดการ Study Plan <small>CRUD</small>
+          จัดการ Study Plan <small>MongoDB CRUD</small>
+        </button>
+
+        <div style={{ borderTop: '1px solid var(--border)', margin: '8px 0', paddingTop: '4px' }}>
+          <div className="mini" style={{ padding: '0 10px', marginBottom: '4px', fontWeight: 700, color: 'var(--muted)' }}>MySQL CRUD</div>
+        </div>
+        <button className={currentView === 'courseManage' ? 'active' : ''} onClick={() => setCurrentView('courseManage')}>
+          จัดการรายวิชา <small>MySQL CRUD</small>
+        </button>
+        <button className={currentView === 'enrollmentManage' ? 'active' : ''} onClick={() => setCurrentView('enrollmentManage')}>
+          จัดการลงทะเบียน <small>MySQL CRUD</small>
+        </button>
+        <button className={currentView === 'userManage' ? 'active' : ''} onClick={() => setCurrentView('userManage')}>
+          จัดการผู้ใช้ <small>MySQL CRUD</small>
         </button>
       </div>
 

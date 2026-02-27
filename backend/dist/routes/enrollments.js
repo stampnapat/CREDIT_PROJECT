@@ -36,6 +36,57 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const ctrl = __importStar(require("../controllers/enrollmentsController"));
 const router = (0, express_1.Router)();
-router.post('/', ctrl.createEnrollment);
-router.get('/user/:userId', ctrl.listByUser);
+/**
+ * @swagger
+ * tags:
+ *   name: Enrollments
+ *   description: User course enrollments
+ */
+/**
+ * @swagger
+ * /api/enrollments:
+ *   post:
+ *     summary: Enroll a user in a course
+ *     tags: [Enrollments]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: integer
+ *               courseId:
+ *                 type: integer
+ *             required:
+ *               - userId
+ *               - courseId
+ *     responses:
+ *       201:
+ *         description: Enrollment created
+ *       400:
+ *         description: Missing userId or courseId
+ *       500:
+ *         description: Server error
+ */
+router.post("/", ctrl.createEnrollment);
+/**
+ * @swagger
+ * /api/enrollments/user/{userId}:
+ *   get:
+ *     summary: List enrollments for a user
+ *     tags: [Enrollments]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: User ID
+ *     responses:
+ *       200:
+ *         description: List of enrollments
+ */
+router.get("/user/:userId", ctrl.listByUser);
 exports.default = router;

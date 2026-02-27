@@ -1,19 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE } from '../App';
 
+const GENED_CATEGORIES = [
+  { key: 'wellness', label: 'Wellness', defaultCredits: 3 },
+  { key: 'entrepreneurship', label: 'Entrepreneurship', defaultCredits: 3 },
+  { key: 'languageAndCommunication', label: 'Language and Communication', defaultCredits: 6 },
+  { key: 'thaiCitizenAndGlobalCitizen', label: 'Thai Citizen and Global Citizen', defaultCredits: 3 },
+  { key: 'aesthetics', label: 'Aesthetics', defaultCredits: 3 },
+];
+
 export default function StudyPlan({ studentId, planData, refreshAll }) {
   const [form, setForm] = useState({
-    program: 'Computer Science', version: '2026', core: 30, major: 45, free: 6
+    program: 'Computer Science', version: '2026',
+    major: 45,
+    wellness: 3,
+    entrepreneurship: 3,
+    languageAndCommunication: 6,
+    thaiCitizenAndGlobalCitizen: 3,
+    aesthetics: 3,
   });
   const [hasDeleted, setHasDeleted] = useState(false);
   const [deletedAt, setDeletedAt] = useState(null);
 
   useEffect(() => {
     if (planData) {
-      const core = planData.categories.find(c => c.name === "Core")?.requiredCredits || 0;
       const major = planData.categories.find(c => c.name === "Major")?.requiredCredits || 0;
-      const free = planData.categories.find(c => c.name === "Free")?.requiredCredits || 0;
-      setForm({ program: planData.program || '', version: planData.version || '', core, major, free });
+      const wellness = planData.categories.find(c => c.name === "Wellness")?.requiredCredits || 0;
+      const entrepreneurship = planData.categories.find(c => c.name === "Entrepreneurship")?.requiredCredits || 0;
+      const languageAndCommunication = planData.categories.find(c => c.name === "Language and Communication")?.requiredCredits || 0;
+      const thaiCitizenAndGlobalCitizen = planData.categories.find(c => c.name === "Thai Citizen and Global Citizen")?.requiredCredits || 0;
+      const aesthetics = planData.categories.find(c => c.name === "Aesthetics")?.requiredCredits || 0;
+      setForm({
+        program: planData.program || '', version: planData.version || '',
+        major, wellness, entrepreneurship, languageAndCommunication, thaiCitizenAndGlobalCitizen, aesthetics
+      });
     }
     // If no planData, check whether a deleted plan exists so we can show Restore button
     if (!planData && studentId) {
@@ -41,9 +61,12 @@ export default function StudyPlan({ studentId, planData, refreshAll }) {
     const payload = {
       studentId, program: form.program, version: form.version,
       categories: [
-        { name: "Core", requiredCredits: Number(form.core) },
         { name: "Major", requiredCredits: Number(form.major) },
-        { name: "Free", requiredCredits: Number(form.free) }
+        { name: "Wellness", requiredCredits: Number(form.wellness) },
+        { name: "Entrepreneurship", requiredCredits: Number(form.entrepreneurship) },
+        { name: "Language and Communication", requiredCredits: Number(form.languageAndCommunication) },
+        { name: "Thai Citizen and Global Citizen", requiredCredits: Number(form.thaiCitizenAndGlobalCitizen) },
+        { name: "Aesthetics", requiredCredits: Number(form.aesthetics) }
       ]
     };
 
@@ -99,7 +122,7 @@ export default function StudyPlan({ studentId, planData, refreshAll }) {
   return (
     <section className="card">
       <h2>Study Plan (CRUD)</h2>
-      <p className="sub">ตั้งค่าแผนหน่วยกิตตามหมวดของนิสิต (ตรงกับ Schema ของ Backend)</p>
+      <p className="sub">ตั้งค่าแผนหน่วยกิต — วิชาเอก (Major) + หมวดศึกษาทั่วไป (GenEd)</p>
 
       <div className="grid-2">
         <div>
@@ -112,18 +135,25 @@ export default function StudyPlan({ studentId, planData, refreshAll }) {
         </div>
       </div>
 
-      <div style={{ marginTop: '12px' }} className="grid-2">
-        <div>
-          <label>Core Required Credits</label>
-          <input type="number" value={form.core} onChange={e => setForm({...form, core: e.target.value})} min="0" />
+      <div style={{ marginTop: '12px' }}>
+        <h3 style={{ margin: '0 0 8px 0', fontSize: '15px' }}>วิชาเอก (Major)</h3>
+        <div className="grid-2">
+          <div>
+            <label>Major Required Credits</label>
+            <input type="number" value={form.major} onChange={e => setForm({...form, major: e.target.value})} min="0" />
+          </div>
         </div>
-        <div>
-          <label>Major Required Credits</label>
-          <input type="number" value={form.major} onChange={e => setForm({...form, major: e.target.value})} min="0" />
-        </div>
-        <div>
-          <label>Free Required Credits</label>
-          <input type="number" value={form.free} onChange={e => setForm({...form, free: e.target.value})} min="0" />
+      </div>
+
+      <div style={{ marginTop: '16px' }}>
+        <h3 style={{ margin: '0 0 8px 0', fontSize: '15px' }}>หมวดศึกษาทั่วไป (GenEd)</h3>
+        <div className="grid-2">
+          {GENED_CATEGORIES.map(cat => (
+            <div key={cat.key}>
+              <label>{cat.label} Required Credits</label>
+              <input type="number" value={form[cat.key]} onChange={e => setForm({...form, [cat.key]: e.target.value})} min="0" />
+            </div>
+          ))}
         </div>
       </div>
 

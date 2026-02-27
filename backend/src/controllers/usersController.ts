@@ -59,3 +59,35 @@ export async function login(req: Request, res: Response) {
     res.status(400).json({ error: "เข้าสู่ระบบไม่สำเร็จ" });
   }
 }
+
+export async function listAllUsers(req: Request, res: Response) {
+  try {
+    const users = await service.listAllUsers();
+    res.json(users);
+  } catch (err: any) {
+    res.status(500).json({ error: err?.message || 'Server error' });
+  }
+}
+
+export async function updateUser(req: Request, res: Response) {
+  try {
+    const id = Number(req.params.id);
+    const { fullName, role } = req.body;
+    const updated = await service.updateUser(id, { fullName, role });
+    res.json(updated);
+  } catch (err: any) {
+    if (err?.code === 'P2025') return res.status(404).json({ error: 'User not found' });
+    res.status(500).json({ error: err?.message || 'Server error' });
+  }
+}
+
+export async function deleteUser(req: Request, res: Response) {
+  try {
+    const id = Number(req.params.id);
+    await service.softDeleteUser(id);
+    res.json({ message: 'User soft deleted', id });
+  } catch (err: any) {
+    if (err?.code === 'P2025') return res.status(404).json({ error: 'User not found' });
+    res.status(500).json({ error: err?.message || 'Server error' });
+  }
+}

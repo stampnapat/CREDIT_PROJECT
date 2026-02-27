@@ -5,8 +5,17 @@ export default function AddCourse({ studentId, refreshAll }) {
   const [coursesMaster, setCoursesMaster] = useState([]);
   const [completedList, setCompletedList] = useState([]);
   
+  const CATEGORY_OPTIONS = [
+    'Major',
+    'Wellness',
+    'Entrepreneurship',
+    'Language and Communication',
+    'Thai Citizen and Global Citizen',
+    'Aesthetics',
+  ];
+
   const [form, setForm] = useState({
-    courseId: '', courseName: '', category: 'Core', credits: '', grade: 'A', term: ''
+    courseId: '', courseName: '', category: 'Major', credits: '', grade: 'A', term: ''
   });
 
   useEffect(() => {
@@ -40,7 +49,7 @@ export default function AddCourse({ studentId, refreshAll }) {
     const val = e.target.value;
     const c = coursesMaster.find(x => x.code === val);
     if(c) {
-      setForm({ ...form, courseId: c.code, courseName: c.title, credits: c.credits, category: 'Core' });
+      setForm({ ...form, courseId: c.code, courseName: c.title, credits: c.credits, category: 'Major' });
     }
   };
 
@@ -55,7 +64,7 @@ export default function AddCourse({ studentId, refreshAll }) {
       });
       if(!res.ok) throw new Error("ข้อมูลไม่ตรง Schema");
 
-      setForm({ courseId: '', courseName: '', category: 'Core', credits: '', grade: 'A', term: '' });
+      setForm({ courseId: '', courseName: '', category: 'Major', credits: '', grade: 'A', term: '' });
       fetchCompleted();
       refreshAll();
       alert("บันทึกวิชาเรียบร้อยแล้ว");
@@ -106,7 +115,9 @@ export default function AddCourse({ studentId, refreshAll }) {
         </div>
         <div>
           <label>หมวดหมู่ (อ้างอิงตาม Study Plan)</label>
-          <input value={form.category} onChange={e => setForm({...form, category: e.target.value})} placeholder="เช่น Core, Major, Free" />
+          <select value={form.category} onChange={e => setForm({...form, category: e.target.value})}>
+            {CATEGORY_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+          </select>
         </div>
         <div>
           <label>หน่วยกิต</label>

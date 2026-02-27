@@ -36,6 +36,41 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const ctrl = __importStar(require("../controllers/coursesController"));
 const router = (0, express_1.Router)();
-router.get('/', ctrl.listCourses);
-router.get('/:id', ctrl.getCourse);
+/**
+ * @swagger
+ * tags:
+ *   name: Courses
+ *   description: Course catalog
+ */
+/**
+ * @swagger
+ * /api/courses:
+ *   get:
+ *     summary: List all courses
+ *     tags: [Courses]
+ *     responses:
+ *       200:
+ *         description: List of courses
+ */
+router.get("/", ctrl.listCourses);
+/**
+ * @swagger
+ * /api/courses/{id}:
+ *   get:
+ *     summary: Get course by ID
+ *     tags: [Courses]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: Course ID
+ *     responses:
+ *       200:
+ *         description: Course found
+ *       404:
+ *         description: Course not found
+ */
+router.get("/:id", ctrl.getCourse);
 exports.default = router;

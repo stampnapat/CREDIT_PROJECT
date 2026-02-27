@@ -16,10 +16,13 @@ const cors_1 = __importDefault(require("cors"));
 const users_1 = __importDefault(require("./routes/users"));
 const courses_1 = __importDefault(require("./routes/courses"));
 const enrollments_1 = __importDefault(require("./routes/enrollments"));
+const swagger_1 = require("./swagger");
 dotenv_1.default.config();
 exports.app = (0, express_1.default)();
 exports.app.use(express_1.default.json());
 exports.app.use((0, cors_1.default)());
+// Swagger UI and OpenAPI JSON
+(0, swagger_1.setupSwagger)(exports.app);
 exports.app.get("/health", (_, res) => res.json({ ok: true }));
 exports.app.use("/api/studyplan", studyPlan_routes_1.studyPlanRouter);
 exports.app.use("/api/completed-courses", completedCourse_routes_1.completedCourseRouter);

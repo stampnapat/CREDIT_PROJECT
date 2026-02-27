@@ -6,6 +6,9 @@ import Dashboard from './components/Dashboard';
 import AddCourse from './components/AddCourse';
 import Remaining from './components/Remaining';
 import StudyPlan from './components/StudyPlan';
+import CourseManage from './components/CourseManage';
+import EnrollmentManage from './components/EnrollmentManage';
+import UserManage from './components/UserManage';
 
 export const API_BASE = "http://localhost:8080/api";
 
@@ -87,6 +90,9 @@ function App() {
             {currentView === 'addCourse' && <AddCourse studentId={studentId} refreshAll={refreshAll} />}
             {currentView === 'remaining' && <Remaining summary={summaryData} />}
             {currentView === 'studyPlan' && <StudyPlan studentId={studentId} planData={studyPlanData} refreshAll={refreshAll} />}
+            {currentView === 'courseManage' && <CourseManage />}
+            {currentView === 'enrollmentManage' && <EnrollmentManage studentId={studentId} />}
+            {currentView === 'userManage' && <UserManage />}
           </main>
         </section>
       )}
