@@ -27,6 +27,8 @@ export default function Auth({ setStudentId, setUserRole }) {
       const data = await res.json();
       const role = data.user?.role || "STUDENT";
 
+      // เก็บ JWT token + ข้อมูล user
+      localStorage.setItem("token", data.token);
       localStorage.setItem("studentId", loginEmail);
       localStorage.setItem("userRole", role);
       setUserRole(role);
@@ -38,19 +40,41 @@ export default function Auth({ setStudentId, setUserRole }) {
   };
 
   const demoLogin = async () => {
-    setEmail("S001");
-    setPassword("demo");
+    // Demo login ผ่าน API จริง — ใช้ account demo@ku.th
+    const demoEmail = "demo@ku.th";
+    const demoPassword = "demo1234";
+
     try {
+      // Reset demo data in MongoDB
       await fetch(`${API_BASE}/demo/reset`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ studentId: "S001" })
+        body: JSON.stringify({ studentId: demoEmail })
       });
-    } catch (err) { console.warn("Demo reset API warning:", err); }
+    } catch (err) { console.warn("Demo reset warning:", err); }
 
-    const cleanId = "S001";
-    localStorage.setItem("studentId", cleanId);
-    setStudentId(cleanId);
+    try {
+      // Login ผ่าน API จริง (auto-register ถ้ายังไม่มี)
+      const res = await fetch(`${API_BASE}/users/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: demoEmail, password: demoPassword })
+      });
+
+      if (!res.ok) {
+        alert("Demo login ไม่สำเร็จ");
+        return;
+      }
+
+      const data = await res.json();
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("studentId", demoEmail);
+      localStorage.setItem("userRole", data.user?.role || "STUDENT");
+      setUserRole(data.user?.role || "STUDENT");
+      setStudentId(demoEmail);
+    } catch (err) {
+      alert("ไม่สามารถเชื่อมต่อ Demo ได้");
+    }
   };
 
   return (

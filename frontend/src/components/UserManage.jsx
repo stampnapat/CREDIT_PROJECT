@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { API_BASE } from '../App';
+import { API_BASE, authFetch } from '../App';
 
 export default function UserManage() {
   const [users, setUsers] = useState([]);
@@ -8,7 +8,7 @@ export default function UserManage() {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch(`${API_BASE}/users`);
+      const res = await authFetch(`${API_BASE}/users`);
       if (res.ok) setUsers(await res.json());
     } catch (err) { console.error(err); }
   };
@@ -17,7 +17,7 @@ export default function UserManage() {
     const newName = prompt('กรอกชื่อใหม่:', currentName || '');
     if (newName === null) return;
     try {
-      const res = await fetch(`${API_BASE}/users/${id}`, {
+      const res = await authFetch(`${API_BASE}/users/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fullName: newName })
@@ -35,7 +35,7 @@ export default function UserManage() {
     const newRole = prompt(`เลือก Role ใหม่:\n${roles.join(', ')}`, currentRole);
     if (!newRole || !roles.includes(newRole.toUpperCase())) return;
     try {
-      const res = await fetch(`${API_BASE}/users/${id}`, {
+      const res = await authFetch(`${API_BASE}/users/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role: newRole.toUpperCase() })
@@ -51,7 +51,7 @@ export default function UserManage() {
   const handleDelete = async (id) => {
     if (!window.confirm('ต้องการลบ User นี้ใช่หรือไม่?')) return;
     try {
-      const res = await fetch(`${API_BASE}/users/${id}`, { method: 'DELETE' });
+      const res = await authFetch(`${API_BASE}/users/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error();
       fetchUsers();
       alert('ลบ User เรียบร้อยแล้ว');

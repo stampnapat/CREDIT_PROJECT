@@ -12,6 +12,19 @@ import UserManage from './components/UserManage';
 
 export const API_BASE = "http://localhost:8080/api";
 
+/**
+ * Helper: fetch ที่แนบ JWT token อัตโนมัติ
+ * ใช้แทน fetch() ในทุก component ที่ต้อง auth
+ */
+export function authFetch(url, options = {}) {
+  const token = localStorage.getItem("token");
+  const headers = { ...(options.headers || {}) };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  return fetch(url, { ...options, headers });
+}
+
 function App() {
   const [studentId, setStudentId] = useState(localStorage.getItem("studentId") || null);
   const [userRole, setUserRole] = useState(localStorage.getItem("userRole") || "STUDENT");
@@ -32,7 +45,7 @@ function App() {
 
   const fetchSummary = async () => {
     try {
-      const res = await fetch(`${API_BASE}/summary/${studentId}`);
+      const res = await authFetch(`${API_BASE}/summary/${studentId}`);
       if (!res.ok) throw new Error();
       const data = await res.json();
       setSummaryData(data);
@@ -43,7 +56,7 @@ function App() {
 
   const fetchPlan = async () => {
     try {
-      const res = await fetch(`${API_BASE}/studyplan/${studentId}`);
+      const res = await authFetch(`${API_BASE}/studyplan/${studentId}`);
       if (!res.ok) throw new Error();
       const plan = await res.json();
       setStudyPlanData(plan);
@@ -56,6 +69,7 @@ function App() {
     if (!window.confirm("คุณต้องการออกจากระบบใช่หรือไม่?")) return;
     localStorage.removeItem("studentId");
     localStorage.removeItem("userRole");
+    localStorage.removeItem("token");
     setStudentId(null);
     setUserRole("STUDENT");
   };

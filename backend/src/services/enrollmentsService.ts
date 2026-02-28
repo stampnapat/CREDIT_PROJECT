@@ -24,7 +24,13 @@ export async function listAllEnrollments() {
 
 export async function updateEnrollment(id: number, data: { status?: string; grade?: string; creditsEarned?: number }) {
   const updateData: any = {};
-  if (data.status !== undefined) updateData.status = data.status as EnrollmentStatus;
+  if (data.status !== undefined) {
+    updateData.status = data.status as EnrollmentStatus;
+    // Set completedAt automatically when status changes to COMPLETED
+    if (data.status === 'COMPLETED') {
+      updateData.completedAt = new Date();
+    }
+  }
   if (data.grade !== undefined) updateData.grade = data.grade;
   if (data.creditsEarned !== undefined) updateData.creditsEarned = data.creditsEarned;
   return prisma.enrollment.update({

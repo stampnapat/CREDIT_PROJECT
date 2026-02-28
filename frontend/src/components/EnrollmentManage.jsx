@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { API_BASE } from '../App';
+import { API_BASE, authFetch } from '../App';
 
 export default function EnrollmentManage({ studentId }) {
   const [enrollments, setEnrollments] = useState([]);
@@ -15,21 +15,21 @@ export default function EnrollmentManage({ studentId }) {
 
   const fetchEnrollments = async () => {
     try {
-      const res = await fetch(`${API_BASE}/enrollments`);
+      const res = await authFetch(`${API_BASE}/enrollments`);
       if (res.ok) setEnrollments(await res.json());
     } catch (err) { console.error(err); }
   };
 
   const fetchCourses = async () => {
     try {
-      const res = await fetch(`${API_BASE}/courses`);
+      const res = await authFetch(`${API_BASE}/courses`);
       if (res.ok) setCourses(await res.json());
     } catch (err) { console.error(err); }
   };
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch(`${API_BASE}/users`);
+      const res = await authFetch(`${API_BASE}/users`);
       if (res.ok) setUsers(await res.json());
     } catch (err) { console.error(err); }
   };
@@ -37,7 +37,7 @@ export default function EnrollmentManage({ studentId }) {
   const handleEnroll = async () => {
     if (!form.userId || !form.courseId) return alert('กรุณาเลือก User และ Course');
     try {
-      const res = await fetch(`${API_BASE}/enrollments`, {
+      const res = await authFetch(`${API_BASE}/enrollments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: Number(form.userId), courseId: Number(form.courseId) })
@@ -59,7 +59,7 @@ export default function EnrollmentManage({ studentId }) {
     const newStatus = prompt(`เลือกสถานะใหม่:\n${statuses.join(', ')}`, currentStatus);
     if (!newStatus || !statuses.includes(newStatus.toUpperCase())) return;
     try {
-      const res = await fetch(`${API_BASE}/enrollments/${id}`, {
+      const res = await authFetch(`${API_BASE}/enrollments/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus.toUpperCase() })
@@ -75,7 +75,7 @@ export default function EnrollmentManage({ studentId }) {
     const newGrade = prompt('กรอกเกรดใหม่:', currentGrade || '');
     if (!newGrade) return;
     try {
-      const res = await fetch(`${API_BASE}/enrollments/${id}`, {
+      const res = await authFetch(`${API_BASE}/enrollments/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ grade: newGrade.toUpperCase() })
@@ -90,7 +90,7 @@ export default function EnrollmentManage({ studentId }) {
   const handleDelete = async (id) => {
     if (!window.confirm('ต้องการยกเลิกการลงทะเบียนนี้ใช่หรือไม่?')) return;
     try {
-      const res = await fetch(`${API_BASE}/enrollments/${id}`, { method: 'DELETE' });
+      const res = await authFetch(`${API_BASE}/enrollments/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error();
       fetchEnrollments();
       alert('ลบการลงทะเบียนเรียบร้อยแล้ว');

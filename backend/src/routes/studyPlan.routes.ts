@@ -25,6 +25,16 @@ const planSchema = z.object({
   categories: z.array(categorySchema).default([])
 });
 
+// LIST ALL study plans (ทุก student)
+studyPlanRouter.get("/", async (_req: Request, res: Response) => {
+  try {
+    const docs = await StudyPlanModel.find({ isDeleted: false }).sort({ createdAt: -1 }).lean();
+    res.json(docs.map(sanitizeStudyPlan));
+  } catch (err: any) {
+    return res.status(500).json({ message: err.message });
+  }
+});
+
 studyPlanRouter.post("/", async (req: Request, res: Response) => {
   const parsed = planSchema.safeParse(req.body);
   if (!parsed.success) {

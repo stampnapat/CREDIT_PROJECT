@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { API_BASE } from '../App';
+import { API_BASE, authFetch } from '../App';
 
 const GENED_CATEGORIES = [
   { key: 'wellness', label: 'Wellness', defaultCredits: 3 },
@@ -39,7 +39,7 @@ export default function StudyPlan({ studentId, planData, refreshAll }) {
     if (!planData && studentId) {
       (async () => {
         try {
-          const res = await fetch(`${API_BASE}/studyplan/student/${studentId}/deleted`);
+          const res = await authFetch(`${API_BASE}/studyplan/student/${studentId}/deleted`);
           if (!res.ok) {
             setHasDeleted(false);
             return;
@@ -71,7 +71,7 @@ export default function StudyPlan({ studentId, planData, refreshAll }) {
     };
 
     try {
-      const res = await fetch(`${API_BASE}/studyplan`, {
+      const res = await authFetch(`${API_BASE}/studyplan`, {
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload)
       });
       if(!res.ok) throw new Error("ข้อมูลไม่ตรง Schema");
@@ -84,7 +84,7 @@ export default function StudyPlan({ studentId, planData, refreshAll }) {
   if (!window.confirm("แน่ใจหรือไม่ว่าต้องการลบ Study Plan ของคุณ?")) return;
 
   try {
-    const res = await fetch(
+    const res = await authFetch(
       `${API_BASE}/studyplan/student/${studentId}`,
       { method: "DELETE" }
     );
@@ -109,7 +109,7 @@ export default function StudyPlan({ studentId, planData, refreshAll }) {
     if (!window.confirm("ต้องการคืน Study Plan ที่ลบไว้หรือไม่?")) return;
 
     try {
-      const res = await fetch(`${API_BASE}/studyplan/student/${studentId}/restore`, { method: 'POST' });
+      const res = await authFetch(`${API_BASE}/studyplan/student/${studentId}/restore`, { method: 'POST' });
       if (!res.ok) throw new Error('restore failed');
       alert('คืน Study Plan เรียบร้อย');
       refreshAll();

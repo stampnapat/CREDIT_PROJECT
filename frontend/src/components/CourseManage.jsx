@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { API_BASE } from '../App';
+import { API_BASE, authFetch } from '../App';
 
 export default function CourseManage() {
   const [courses, setCourses] = useState([]);
@@ -10,7 +10,7 @@ export default function CourseManage() {
 
   const fetchCourses = async () => {
     try {
-      const res = await fetch(`${API_BASE}/courses`);
+      const res = await authFetch(`${API_BASE}/courses`);
       if (res.ok) setCourses(await res.json());
     } catch (err) { console.error(err); }
   };
@@ -26,7 +26,7 @@ export default function CourseManage() {
     try {
       if (editingId) {
         // Update
-        const res = await fetch(`${API_BASE}/courses/${editingId}`, {
+        const res = await authFetch(`${API_BASE}/courses/${editingId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ...form, credits: Number(form.credits) })
@@ -38,7 +38,7 @@ export default function CourseManage() {
         alert('แก้ไขวิชาสำเร็จ!');
       } else {
         // Create
-        const res = await fetch(`${API_BASE}/courses`, {
+        const res = await authFetch(`${API_BASE}/courses`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ...form, credits: Number(form.credits) })
@@ -69,7 +69,7 @@ export default function CourseManage() {
   const handleDelete = async (id) => {
     if (!window.confirm('ต้องการลบวิชานี้ใช่หรือไม่?')) return;
     try {
-      const res = await fetch(`${API_BASE}/courses/${id}`, { method: 'DELETE' });
+      const res = await authFetch(`${API_BASE}/courses/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error();
       fetchCourses();
       alert('ลบวิชาเรียบร้อยแล้ว');

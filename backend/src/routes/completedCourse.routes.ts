@@ -14,7 +14,24 @@ const addSchema = z.object({
   term: z.string().min(1)
 });
 
-// ADD completed course
+const updateSchema = z.object({
+  courseId: z.string().min(1).optional(),
+  courseName: z.string().min(1).optional(),
+  category: z.string().min(1).optional(),
+  credits: z.number().positive().optional(),
+  grade: z.string().min(1).optional(),
+  term: z.string().min(1).optional()
+});
+
+// LIST ALL completed courses (ทุก student)
+completedCourseRouter.get("/", async (_req, res) => {
+  const docs = await CompletedCourseModel.find({ isDeleted: false })
+    .sort({ createdAt: -1 })
+    .lean();
+  res.json(docs);
+});
+
+// ADD completed course (Create)
 completedCourseRouter.post("/", async (req, res) => {
   const parsed = addSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json(parsed.error);
@@ -23,7 +40,22 @@ completedCourseRouter.post("/", async (req, res) => {
   res.status(201).json(doc);
 });
 
-// Update grade
+// FULL UPDATE completed course (Update — ทุก field)
+completedCourseRouter.put("/:id", async (req, res) => {
+  const parsed = updateSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json(parsed.error);
+
+  const updated = await CompletedCourseModel.findOneAndUpdate(
+    { _id: req.params.id, isDeleted: false },
+    { $set: parsed.data },
+    { new: true }
+  );
+
+  if (!updated) return res.status(404).json({ message: "Completed course not found" });
+  res.json(updated);
+});
+
+// Update grade only (backward compatible)
 completedCourseRouter.put("/:id/grade", async (req, res) => {
   const parsed = z.object({ grade: z.string().min(1) }).safeParse(req.body);
   if (!parsed.success) return res.status(400).json(parsed.error);
@@ -38,7 +70,7 @@ completedCourseRouter.put("/:id/grade", async (req, res) => {
   res.json(updated);
 });
 
-// Soft delete
+// Soft delete (Delete)
 completedCourseRouter.delete("/:id", async (req, res) => {
   const updated = await CompletedCourseModel.findOneAndUpdate(
     { _id: req.params.id, isDeleted: false },
@@ -50,7 +82,7 @@ completedCourseRouter.delete("/:id", async (req, res) => {
   res.json({ message: "Deleted (soft)", id: req.params.id });
 });
 
-// (ช่วยเดโม) list ของ student
+// List by student (Read)
 completedCourseRouter.get("/by-student/:studentId", async (req, res) => {
   const docs = await CompletedCourseModel.find({
     studentId: req.params.studentId,

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { API_BASE } from '../App';
+import { API_BASE, authFetch } from '../App';
 
 export default function AddCourse({ studentId, refreshAll }) {
   const [coursesMaster, setCoursesMaster] = useState([]);
@@ -17,6 +17,7 @@ export default function AddCourse({ studentId, refreshAll }) {
   const [form, setForm] = useState({
     courseId: '', courseName: '', category: 'Major', credits: '', grade: 'A', term: ''
   });
+  const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
     fetchMasterCourses();
@@ -25,7 +26,7 @@ export default function AddCourse({ studentId, refreshAll }) {
 
   const fetchMasterCourses = async () => {
     try {
-      const res = await fetch(`${API_BASE}/courses`);
+      const res = await authFetch(`${API_BASE}/courses`);
       if(!res.ok) throw new Error();
       setCoursesMaster(await res.json());
     } catch (err) {
@@ -40,7 +41,7 @@ export default function AddCourse({ studentId, refreshAll }) {
 
   const fetchCompleted = async () => {
     try {
-      const res = await fetch(`${API_BASE}/completed-courses/by-student/${studentId}`);
+      const res = await authFetch(`${API_BASE}/completed-courses/by-student/${studentId}`);
       if (res.ok) setCompletedList(await res.json());
     } catch (err) { console.error(err); }
   };
@@ -56,26 +57,54 @@ export default function AddCourse({ studentId, refreshAll }) {
   const addCompleted = async () => {
     if(!form.courseId || !form.courseName || !form.term) return alert("กรุณากรอกข้อมูลให้ครบถ้วน");
 
-    const payload = { ...form, studentId, credits: Number(form.credits) };
-
     try {
-      const res = await fetch(`${API_BASE}/completed-courses`, {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload)
-      });
-      if(!res.ok) throw new Error("ข้อมูลไม่ตรง Schema");
+      if (editingId) {
+        // Full Update (PUT) — แก้ไขทุก field
+        const res = await authFetch(`${API_BASE}/completed-courses/${editingId}`, {
+          method: "PUT", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ courseId: form.courseId, courseName: form.courseName, category: form.category, credits: Number(form.credits), grade: form.grade, term: form.term })
+        });
+        if(!res.ok) throw new Error("อัปเดตไม่สำเร็จ");
+        alert("อัปเดตวิชาเรียบร้อยแล้ว");
+        setEditingId(null);
+      } else {
+        // Create (POST)
+        const payload = { ...form, studentId, credits: Number(form.credits) };
+        const res = await authFetch(`${API_BASE}/completed-courses`, {
+          method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload)
+        });
+        if(!res.ok) throw new Error("ข้อมูลไม่ตรง Schema");
+        alert("บันทึกวิชาเรียบร้อยแล้ว");
+      }
 
       setForm({ courseId: '', courseName: '', category: 'Major', credits: '', grade: 'A', term: '' });
       fetchCompleted();
       refreshAll();
-      alert("บันทึกวิชาเรียบร้อยแล้ว");
-    } catch (err) { alert("ไม่สามารถบันทึกข้อมูลได้"); }
+    } catch (err) { alert(err.message || "ไม่สามารถบันทึกข้อมูลได้"); }
+  };
+
+  const startEdit = (c) => {
+    setEditingId(c._id);
+    setForm({
+      courseId: c.courseId,
+      courseName: c.courseName,
+      category: c.category,
+      credits: c.credits,
+      grade: c.grade,
+      term: c.term
+    });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setForm({ courseId: '', courseName: '', category: 'Major', credits: '', grade: 'A', term: '' });
   };
 
   const updateGrade = async (id, oldGrade) => {
     const newGrade = prompt(`กรุณากรอกเกรดใหม่:`, oldGrade);
     if(!newGrade) return;
     try {
-      await fetch(`${API_BASE}/completed-courses/${id}/grade`, {
+      await authFetch(`${API_BASE}/completed-courses/${id}/grade`, {
         method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ grade: newGrade.toUpperCase() })
       });
       fetchCompleted();
@@ -86,7 +115,7 @@ export default function AddCourse({ studentId, refreshAll }) {
   const softDeleteCourse = async (id) => {
     if(!window.confirm("ต้องการลบวิชานี้ใช่ไหม?")) return;
     try {
-      await fetch(`${API_BASE}/completed-courses/${id}`, { method: "DELETE" });
+      await authFetch(`${API_BASE}/completed-courses/${id}`, { method: "DELETE" });
       fetchCompleted();
       refreshAll();
     } catch (err) { console.error(err); }
@@ -141,7 +170,10 @@ export default function AddCourse({ studentId, refreshAll }) {
       </div>
 
       <div className="form-actions">
-        <button className="btn" onClick={addCompleted}>บันทึกรายวิชา</button>
+        <button className="btn" onClick={addCompleted}>
+          {editingId ? 'อัปเดตวิชา (Update)' : 'บันทึกรายวิชา (Create)'}
+        </button>
+        {editingId && <button className="btn secondary" onClick={cancelEdit}>ยกเลิกการแก้ไข</button>}
       </div>
 
       <div className="table-wrap">
@@ -170,7 +202,8 @@ export default function AddCourse({ studentId, refreshAll }) {
                   <td><span className="tag">{c.category === 'Major' ? '🎓' : '📚'} {c.category}</span></td><td>{c.credits}</td><td>{c.grade}</td><td>{c.term}</td>
                   <td>
                     <div className="row-actions">
-                      <button className="btn-sm" onClick={() => updateGrade(c._id, c.grade)}>✏️ เกรด</button>
+                      <button className="btn-sm" onClick={() => startEdit(c)}>✏️ แก้ไข</button>
+                      <button className="btn-sm" onClick={() => updateGrade(c._id, c.grade)}>📝 เกรด</button>
                       <button className="btn-sm danger" onClick={() => softDeleteCourse(c._id)}>🗑️ ลบ</button>
                     </div>
                   </td>

@@ -152,7 +152,7 @@ npm run dev                # Vite → port 5173/5174
 |---|---|
 | Frontend | http://localhost:5173 (หรือ 5174) |
 | Backend API | http://localhost:8080 |
-| Swagger API Docs | http://localhost:8080/docs |
+| Swagger API Docs | http://localhost:8080/api-docs |
 | MySQL | `localhost:3307` (user: root / pass: root) |
 | MongoDB | `localhost:27017` (database: college_progress) |
 
@@ -176,7 +176,8 @@ npm run dev                # Vite → port 5173/5174
 | 👤 **จัดการผู้ใช้** | ดู / แก้ไขชื่อ-Role (STUDENT/INSTRUCTOR/ADMIN) / ลบ | MySQL CRUD (Prisma) |
 
 ### 🔧 ระบบเสริม
-- 🔐 **Authentication** — Register / Login ด้วย bcrypt + JWT + Demo Login
+- 🔐 **Authentication** — Login ด้วย bcrypt + JWT (auto-register) + JWT middleware ป้องกัน routes
+- 🛡️ **Authorization** — Admin-only access สำหรับหน้า MySQL management
 - 🗑️ **Soft Delete** — ทุก entity ทั้ง MySQL (Prisma middleware) + MongoDB (isDeleted field)
 - ♻️ **Restore** — Study Plan สามารถกู้คืนหลัง soft delete ได้
 - 📖 **Swagger API Docs** — เอกสาร API อัตโนมัติ (OpenAPI 3.0)
@@ -225,18 +226,19 @@ CollegeEnrollmentPlatform/
 │   │   ├── prismaClient.ts         # Prisma client + soft-delete middleware
 │   │   ├── swagger.ts              # Swagger/OpenAPI setup
 │   │   ├── config/
-│   │   │   ├── mysql.ts            # MySQL connection config
 │   │   │   └── mongo.ts            # MongoDB connection (Mongoose)
+│   │   ├── middleware/
+│   │   │   └── auth.middleware.ts   # JWT authentication + admin-only guard
 │   │   ├── models/                 # Mongoose schemas
 │   │   │   ├── StudyPlan.ts        # study_plans collection
 │   │   │   └── CompletedCourse.ts  # completed_courses collection
-│   │   ├── controllers/            # Request handlers (5 controllers)
+│   │   ├── controllers/            # Request handlers (3 controllers)
 │   │   ├── services/               # Business logic
 │   │   │   ├── summary.service.ts  # Credit aggregation (MongoDB)
 │   │   │   ├── coursesService.ts   # Course CRUD (Prisma)
 │   │   │   ├── enrollmentsService.ts # Enrollment CRUD (Prisma)
 │   │   │   └── usersService.ts     # User CRUD (Prisma)
-│   │   ├── routes/                 # API routes + Swagger JSDoc (9 routers)
+│   │   ├── routes/                 # API routes + Swagger JSDoc (7 routers)
 │   │   └── utils/
 │   │       ├── auth.ts             # JWT + bcrypt helpers
 │   │       └── validation.ts       # Zod schemas
@@ -269,36 +271,39 @@ CollegeEnrollmentPlatform/
 ## 🌐 API Endpoints
 
 ### MySQL (Prisma) — 15 endpoints
-| Method | Path | Description |
-|---|---|---|
-| `POST` | `/api/users/register` | สมัครสมาชิก (bcrypt hash) |
-| `POST` | `/api/users/login` | เข้าสู่ระบบ → JWT token |
-| `GET` | `/api/users` | รายชื่อผู้ใช้ทั้งหมด |
-| `GET` | `/api/users/:id` | ข้อมูลผู้ใช้ตาม ID |
-| `PUT` | `/api/users/:id` | แก้ไขชื่อ / Role |
-| `DELETE` | `/api/users/:id` | Soft delete ผู้ใช้ |
-| `GET` | `/api/courses` | รายวิชาทั้งหมด |
-| `GET` | `/api/courses/:id` | รายวิชาตาม ID |
-| `POST` | `/api/courses` | เพิ่มรายวิชา |
-| `PUT` | `/api/courses/:id` | แก้ไขรายวิชา |
-| `DELETE` | `/api/courses/:id` | Soft delete รายวิชา |
-| `GET` | `/api/enrollments` | การลงทะเบียนทั้งหมด |
-| `POST` | `/api/enrollments` | ลงทะเบียนเรียน |
-| `PUT` | `/api/enrollments/:id` | อัปเดตสถานะ / เกรด |
-| `DELETE` | `/api/enrollments/:id` | Soft delete การลงทะเบียน |
+| Method | Path | Description | Auth |
+|---|---|---|---|
+| `POST` | `/api/users/register` | สมัครสมาชิก (bcrypt hash) | 🔓 Public |
+| `POST` | `/api/users/login` | เข้าสู่ระบบ → JWT token | 🔓 Public |
+| `GET` | `/api/users` | รายชื่อผู้ใช้ทั้งหมด | 🔓 Public |
+| `GET` | `/api/users/:id` | ข้อมูลผู้ใช้ตาม ID | 🔓 Public |
+| `PUT` | `/api/users/:id` | แก้ไขชื่อ / Role | 🔓 Public |
+| `DELETE` | `/api/users/:id` | Soft delete ผู้ใช้ | 🔓 Public |
+| `GET` | `/api/courses` | รายวิชาทั้งหมด | 🔒 JWT |
+| `GET` | `/api/courses/:id` | รายวิชาตาม ID | 🔒 JWT |
+| `POST` | `/api/courses` | เพิ่มรายวิชา | 🔒 JWT |
+| `PUT` | `/api/courses/:id` | แก้ไขรายวิชา | 🔒 JWT |
+| `DELETE` | `/api/courses/:id` | Soft delete รายวิชา | 🔒 JWT |
+| `GET` | `/api/enrollments` | การลงทะเบียนทั้งหมด | 🔒 JWT |
+| `POST` | `/api/enrollments` | ลงทะเบียนเรียน | 🔒 JWT |
+| `PUT` | `/api/enrollments/:id` | อัปเดตสถานะ / เกรด | 🔒 JWT |
+| `DELETE` | `/api/enrollments/:id` | Soft delete การลงทะเบียน | 🔒 JWT |
 
-### MongoDB (Mongoose) — 9 endpoints
-| Method | Path | Description |
-|---|---|---|
-| `POST` | `/api/studyplan` | สร้าง/อัปเดต study plan |
-| `GET` | `/api/studyplan/:studentId` | ดู study plan |
-| `DELETE` | `/api/studyplan/student/:studentId` | Soft delete plan |
-| `POST` | `/api/studyplan/student/:studentId/restore` | ♻️ Restore plan |
-| `POST` | `/api/completed-courses` | เพิ่มวิชาที่เรียนจบ |
-| `GET` | `/api/completed-courses/by-student/:studentId` | รายวิชาที่เรียนจบ |
-| `PUT` | `/api/completed-courses/:id/grade` | อัปเดตเกรด |
-| `DELETE` | `/api/completed-courses/:id` | Soft delete วิชา |
-| `GET` | `/api/summary/:studentId` | 📊 สรุปหน่วยกิต (aggregation) |
+### MongoDB (Mongoose) — 12 endpoints
+| Method | Path | Description | Auth |
+|---|---|---|---|
+| `GET` | `/api/studyplan` | 📋 List all study plans | 🔒 JWT |
+| `POST` | `/api/studyplan` | สร้าง/อัปเดต study plan | 🔒 JWT |
+| `GET` | `/api/studyplan/:studentId` | ดู study plan | 🔒 JWT |
+| `PUT` | `/api/studyplan/:id` | แก้ไข study plan | 🔒 JWT |
+| `DELETE` | `/api/studyplan/student/:studentId` | Soft delete plan | 🔒 JWT |
+| `POST` | `/api/studyplan/student/:studentId/restore` | ♻️ Restore plan | 🔒 JWT |
+| `GET` | `/api/completed-courses` | 📋 List all completed courses | 🔒 JWT |
+| `POST` | `/api/completed-courses` | เพิ่มวิชาที่เรียนจบ | 🔒 JWT |
+| `GET` | `/api/completed-courses/by-student/:studentId` | รายวิชาที่เรียนจบ | 🔒 JWT |
+| `PUT` | `/api/completed-courses/:id` | อัปเดตวิชา (ทุก field) | 🔒 JWT |
+| `DELETE` | `/api/completed-courses/:id` | Soft delete วิชา | 🔒 JWT |
+| `GET` | `/api/summary/:studentId` | 📊 สรุปหน่วยกิต (aggregation) | 🔒 JWT |
 
 ---
 

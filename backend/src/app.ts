@@ -1,5 +1,4 @@
 // backend/src/app.ts
-import { registerRouter } from "./routes/register.routes";
 import express from "express";
 import dotenv from "dotenv";
 import { studyPlanRouter } from "./routes/studyPlan.routes";
@@ -11,6 +10,7 @@ import usersRouter from "./routes/users";
 import coursesRouter from "./routes/courses";
 import enrollmentsRouter from "./routes/enrollments";
 import { setupSwagger } from "./swagger";
+import { authMiddleware } from "./middleware/auth.middleware";
 
 dotenv.config();
 
@@ -23,12 +23,13 @@ setupSwagger(app);
 
 app.get("/health", (_, res) => res.json({ ok: true }));
 
-app.use("/api/studyplan", studyPlanRouter);
-app.use("/api/completed-courses", completedCourseRouter);
-app.use("/api/summary", summaryRouter);
+// — Public routes (ไม่ต้อง login) —
+app.use("/api/users", usersRouter);
 app.use("/api/demo", demoRouter);
 
-app.use("/api/users", usersRouter);
-app.use("/api/register", registerRouter);
-app.use("/api/courses", coursesRouter);
-app.use("/api/enrollments", enrollmentsRouter);
+// — Protected routes (ต้อง login ด้วย JWT) —
+app.use("/api/studyplan", authMiddleware, studyPlanRouter);
+app.use("/api/completed-courses", authMiddleware, completedCourseRouter);
+app.use("/api/summary", authMiddleware, summaryRouter);
+app.use("/api/courses", authMiddleware, coursesRouter);
+app.use("/api/enrollments", authMiddleware, enrollmentsRouter);
