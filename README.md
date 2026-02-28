@@ -183,7 +183,7 @@ npm run dev                # Vite → port 5173/5174
 - 📖 **Swagger API Docs** — เอกสาร API อัตโนมัติ (OpenAPI 3.0)
 - 🐳 **Docker Compose** — รันทั้งระบบ 1 คำสั่ง (API + MySQL + MongoDB)
 - ✅ **Zod Validation** — ตรวจสอบข้อมูล input ทุก endpoint
-- 🧪 **Jest Tests** — ทดสอบ study plan soft-delete flow (mongodb-memory-server)
+- 🧪 **Jest Tests** — 4 test suites, 32 test cases ครอบคลุม MongoDB CRUD + Soft Delete + Auth (mongodb-memory-server)
 - 🎨 **UI Design System** — KU Green theme, Recharts, animations, glassmorphism
 
 ---
@@ -243,7 +243,11 @@ CollegeEnrollmentPlatform/
 │   │       ├── auth.ts             # JWT + bcrypt helpers
 │   │       └── validation.ts       # Zod schemas
 │   └── test/
-│       └── studyplan.test.ts       # Jest test — soft delete flow
+│       ├── helpers.ts               # Test utilities — JWT token helpers
+│       ├── studyplan.test.ts       # Study Plan CRUD + soft delete + restore (10 tests)
+│       ├── completedCourse.test.ts # Completed Course CRUD + soft delete (12 tests)
+│       ├── summary.test.ts         # Credit aggregation + edge cases (7 tests)
+│       └── demo.test.ts            # Demo reset seeding (3 tests)
 │
 └── frontend/
     ├── package.json
@@ -321,13 +325,19 @@ CollegeEnrollmentPlatform/
 
 ```bash
 cd backend
-npm test
+npm test                              # รันทุก test
+npx jest --runInBand --verbose         # รันพร้อมแสดงรายละเอียด
+npx jest --runInBand test/summary.test.ts  # รันแค่ไฟล์เดียว
 ```
 
-ทดสอบ Study Plan soft-delete flow ด้วย **Jest** + **mongodb-memory-server** (in-memory MongoDB):
-- ✅ Create study plan
-- ✅ Soft delete (isDeleted = true, deletedAt set)
-- ✅ Restore (isDeleted = false, deletedAt = null)
+**4 Test Suites — 32 Test Cases** ด้วย **Jest** + **Supertest** + **mongodb-memory-server** (ไม่ต้องเปิด Docker):
+
+| Test File | Tests | ทดสอบ |
+|---|---|---|
+| `studyplan.test.ts` | 10 | Create, Read, List All, Upsert/Update, Soft Delete, Restore, Auth JWT |
+| `completedCourse.test.ts` | 12 | Create, List All, Read by Student, Full Update, Grade Update, Soft Delete, Auth JWT |
+| `summary.test.ts` | 7 | Credit aggregation ข้ามคอลเลกชัน, per-category progress, edge cases, Auth JWT |
+| `demo.test.ts` | 3 | Demo reset seeding, custom studentId, overwrite prevention |
 
 ---
 
