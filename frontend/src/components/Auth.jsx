@@ -1,18 +1,40 @@
 import React, { useState } from 'react';
 import { API_BASE } from '../App';
 
-export default function Auth({ setStudentId }) {
-  const [authMode, setAuthMode] = useState('login');
+export default function Auth({ setStudentId, setUserRole }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const toggleAuthMode = () => {
-    setAuthMode(prev => prev === 'login' ? 'register' : 'login');
-  };
+  const handleLogin = async () => {
+    if (!email || !password)
+      return alert("กรุณากรอกอีเมลและรหัสผ่าน");
 
-  const handleAuthAction = async () => {
-    if (authMode === 'login') await doLogin();
-    else await doRegister();
+    const loginEmail = email.trim().toLowerCase();
+
+    try {
+      const res = await fetch(`${API_BASE}/users/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: loginEmail, password })
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || data.message || "เข้าสู่ระบบไม่สำเร็จ");
+        return;
+      }
+
+      const data = await res.json();
+      const role = data.user?.role || "STUDENT";
+
+      localStorage.setItem("studentId", loginEmail);
+      localStorage.setItem("userRole", role);
+      setUserRole(role);
+      setStudentId(loginEmail);
+
+    } catch (e) {
+      alert("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้");
+    }
   };
 
   const demoLogin = async () => {
@@ -30,64 +52,6 @@ export default function Auth({ setStudentId }) {
     localStorage.setItem("studentId", cleanId);
     setStudentId(cleanId);
   };
-
-  const doLogin = async () => {
-  if (!email || !password) 
-    return alert("กรุณากรอกอีเมลและรหัสผ่าน");
-
-  const cleanId = email.includes('@')
-    ? email.split('@')[0].toUpperCase()
-    : email.toUpperCase();
-
-  try {
-    const res = await fetch(`${API_BASE}/users/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: cleanId, password })
-    });
-
-    if (!res.ok) {
-      alert("ยังไม่ได้สมัครสมาชิก หรือ รหัสผ่านไม่ถูกต้อง");
-      return;  
-    }
-
-    localStorage.setItem("studentId", cleanId);
-    setStudentId(cleanId);
-
-  } catch (e) {
-    alert("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้");
-  }
-};
-
-
-  const doRegister = async () => {
-  if (!email || !password) {
-    return alert("กรุณากรอกอีเมลและรหัสผ่าน");
-  }
-
-  try {
-    const res = await fetch(`${API_BASE}/users/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: email,
-        password: password
-      })
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      return alert(data.error || "สมัครสมาชิกไม่สำเร็จ");
-    }
-
-    alert("สมัครสมาชิกสำเร็จ กรุณาเข้าสู่ระบบ");
-    setAuthMode("login");
-
-  } catch (err) {
-    alert("เชื่อมต่อเซิร์ฟเวอร์ไม่ได้");
-  }
-};
 
   return (
     <section className="auth-wrap">
@@ -107,9 +71,9 @@ export default function Auth({ setStudentId }) {
 
       <div className="card">
         <h2 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {authMode === 'login' ? '🔐' : '📋'} {authMode === 'login' ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก'}
+          🔐 เข้าสู่ระบบ
         </h2>
-        <p className="sub">จัดการแผนการเรียนและหน่วยกิตของคุณ</p>
+        <p className="sub">ใส่อีเมลและรหัสผ่าน — ถ้ายังไม่มีบัญชี ระบบจะสร้างให้อัตโนมัติ</p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
@@ -119,25 +83,13 @@ export default function Auth({ setStudentId }) {
           <div>
             <label>🔒 รหัสผ่าน</label>
             <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••"
-              onKeyDown={e => e.key === 'Enter' && handleAuthAction()} />
+              onKeyDown={e => e.key === 'Enter' && handleLogin()} />
           </div>
         </div>
 
         <div className="form-actions" style={{ marginTop: 20 }}>
-          <button className="btn" style={{ flex: 1 }} onClick={handleAuthAction}>
-            {authMode === 'login' ? '🔓 เข้าสู่ระบบ' : '✅ ยืนยันการสมัคร'}
-          </button>
-        </div>
-        <div style={{ textAlign: 'center', marginTop: 14 }}>
-          <button
-            onClick={toggleAuthMode}
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              color: 'var(--accent)', fontWeight: 600, fontSize: 13,
-              textDecoration: 'underline', textUnderlineOffset: 3
-            }}
-          >
-            {authMode === 'login' ? 'ยังไม่มีบัญชี? สมัครสมาชิก →' : '← มีบัญชีแล้ว? กลับไปเข้าสู่ระบบ'}
+          <button className="btn" style={{ flex: 1 }} onClick={handleLogin}>
+            🔓 เข้าสู่ระบบ
           </button>
         </div>
       </div>

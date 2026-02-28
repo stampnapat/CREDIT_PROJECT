@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function Sidebar({ studentId, version, currentView, setCurrentView, doLogout }) {
+export default function Sidebar({ studentId, version, currentView, setCurrentView, doLogout, userRole }) {
   const navItems = [
     { key: 'dashboard', icon: '📊', label: 'Dashboard', badge: 'สรุป' },
     { key: 'addCourse', icon: '📝', label: 'เพิ่มวิชาที่เรียน', badge: 'Mongo' },
@@ -41,7 +41,7 @@ export default function Sidebar({ studentId, version, currentView, setCurrentVie
         ))}
 
         <div className="nav-section">🗄️ ฐานข้อมูล MySQL</div>
-        {mysqlItems.map(item => (
+        {userRole === 'ADMIN' ? mysqlItems.map(item => (
           <button
             key={item.key}
             className={currentView === item.key ? 'active' : ''}
@@ -53,7 +53,9 @@ export default function Sidebar({ studentId, version, currentView, setCurrentVie
               <small>{item.badge}</small>
             </span>
           </button>
-        ))}
+        )) : (
+          <div style={{ padding: '8px 16px', fontSize: 12, color: '#999' }}>🔒 เฉพาะ Admin เท่านั้น</div>
+        )}
       </nav>
 
       <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px solid var(--border-light)' }}>

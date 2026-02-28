@@ -1,27 +1,35 @@
 import { Request, Response } from 'express';
 import * as service from '../services/usersService';
-import { registerSchema, loginSchema } from '../utils/validation';
+import { loginSchema } from '../utils/validation';
 import { comparePassword, signToken } from '../utils/auth';
+
+const ADMIN_EMAILS = ["stampnapatt@gmail.com", "admin"];
 
 export async function register(req: Request, res: Response) {
   try {
-    const parsed = registerSchema.parse(req.body);
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ error: "กรุณากรอกข้อมูลให้ครบ" });
+    }
 
-    const existing = await service.findUserByEmail(parsed.email);
+    const isAdmin = ADMIN_EMAILS.includes(email.toLowerCase());
+    if (!isAdmin && !email.toLowerCase().endsWith("@ku.th")) {
+      return res.status(403).json({ error: "กรุณาใช้อีเมล @ku.th เท่านั้น" });
+    }
+
+    const existing = await service.findUserByEmail(email);
     if (existing) {
       return res.status(409).json({ error: "อีเมลนี้ถูกใช้แล้ว" });
     }
 
-    const user = await service.createUser(parsed);
+    const role = isAdmin ? "ADMIN" : "STUDENT";
+    const user = await service.createUser({ email, password, role });
     res.status(201).json(user);
 
   } catch (err: any) {
-
-    // กรณี Zod validation error
     if (err.errors && err.errors.length > 0) {
       return res.status(400).json({ error: err.errors[0].message });
     }
-
     res.status(400).json({ error: "ข้อมูลไม่ถูกต้อง" });
   }
 }
@@ -29,33 +37,42 @@ export async function register(req: Request, res: Response) {
 export async function login(req: Request, res: Response) {
   try {
     const parsed = loginSchema.parse(req.body);
+    const email = parsed.email.trim().toLowerCase();
 
-    const user = await service.findUserByEmail(parsed.email);
-    if (!user) {
-      return res.status(401).json({ error: "ยังไม่ได้สมัครสมาชิก" });
+    // เช็ค email: ต้องเป็น @ku.th หรือ admin email เท่านั้น
+    const isAdmin = ADMIN_EMAILS.includes(email);
+    if (!isAdmin && !email.endsWith("@ku.th")) {
+      return res.status(403).json({ error: "กรุณาใช้อีเมล @ku.th เท่านั้น" });
     }
 
-    const ok = await comparePassword(parsed.password, (user as any).passwordHash);
-    if (!ok) {
-      return res.status(401).json({ error: "รหัสผ่านไม่ถูกต้อง" });
+    let user = await service.findUserByEmail(email);
+
+    if (user) {
+      // มี user แล้ว → เช็ค password
+      const ok = await comparePassword(parsed.password, (user as any).passwordHash);
+      if (!ok) {
+        return res.status(401).json({ error: "รหัสผ่านไม่ถูกต้อง" });
+      }
+    } else {
+      // ยังไม่มี user → สร้างอัตโนมัติ
+      const role = isAdmin ? "ADMIN" : "STUDENT";
+      await service.createUser({ email, password: parsed.password, role });
+      user = await service.findUserByEmail(email);
     }
 
     const token = signToken({
-      userId: user.id,
-      email: user.email,
-      role: user.role
+      userId: user!.id,
+      email: user!.email,
+      role: user!.role
     });
 
-    const safe = await service.getUserSafeById(user.id);
-
+    const safe = await service.getUserSafeById(user!.id);
     res.json({ token, user: safe });
 
   } catch (err: any) {
-
     if (err.errors && err.errors.length > 0) {
       return res.status(400).json({ error: err.errors[0].message });
     }
-
     res.status(400).json({ error: "เข้าสู่ระบบไม่สำเร็จ" });
   }
 }

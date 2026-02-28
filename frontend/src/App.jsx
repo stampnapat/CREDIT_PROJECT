@@ -14,6 +14,7 @@ export const API_BASE = "http://localhost:8080/api";
 
 function App() {
   const [studentId, setStudentId] = useState(localStorage.getItem("studentId") || null);
+  const [userRole, setUserRole] = useState(localStorage.getItem("userRole") || "STUDENT");
   const [currentView, setCurrentView] = useState('dashboard');
   const [summaryData, setSummaryData] = useState(null);
   const [studyPlanData, setStudyPlanData] = useState(null);
@@ -54,7 +55,9 @@ function App() {
   const doLogout = () => {
     if (!window.confirm("คุณต้องการออกจากระบบใช่หรือไม่?")) return;
     localStorage.removeItem("studentId");
+    localStorage.removeItem("userRole");
     setStudentId(null);
+    setUserRole("STUDENT");
   };
 
   return (
@@ -75,7 +78,7 @@ function App() {
       </header>
 
       {!studentId ? (
-        <Auth setStudentId={setStudentId} />
+        <Auth setStudentId={setStudentId} setUserRole={setUserRole} />
       ) : (
         <section className="main">
           <Sidebar 
@@ -83,7 +86,8 @@ function App() {
             version={studyPlanData?.version || "2026"} 
             currentView={currentView} 
             setCurrentView={setCurrentView} 
-            doLogout={doLogout} 
+            doLogout={doLogout}
+            userRole={userRole}
           />
           <main className="content">
             {currentView === 'dashboard' && <Dashboard summary={summaryData} />}
