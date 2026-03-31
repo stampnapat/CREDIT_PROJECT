@@ -79,15 +79,15 @@ jobs:
     steps:
       - name: Skip deploy when VPS secrets are missing
         if: env.VPS_HOST == ''
-        run: echo "Skipping deploy-backend: missing VPS_HOST/VPS_USER/VPS_SSH_KEY secrets."
+        run: 'echo "Skipping deploy-backend: missing VPS_HOST/VPS_USER/VPS_SSH_KEY secrets."'
 
       - name: Skip deploy when VPS user is missing
         if: env.VPS_USER == ''
-        run: echo "Skipping deploy-backend: missing VPS_HOST/VPS_USER/VPS_SSH_KEY secrets."
+        run: 'echo "Skipping deploy-backend: missing VPS_HOST/VPS_USER/VPS_SSH_KEY secrets."'
 
       - name: Skip deploy when VPS SSH key is missing
         if: env.VPS_SSH_KEY == ''
-        run: echo "Skipping deploy-backend: missing VPS_HOST/VPS_USER/VPS_SSH_KEY secrets."
+        run: 'echo "Skipping deploy-backend: missing VPS_HOST/VPS_USER/VPS_SSH_KEY secrets."'
 
       - name: Deploy via SSH
         if: env.VPS_HOST != '' && env.VPS_USER != '' && env.VPS_SSH_KEY != ''
