@@ -5,23 +5,17 @@
  *  POST /api/demo/reset  (public route — no auth required)
  */
 import request from "supertest";
-import { MongoMemoryServer } from "mongodb-memory-server";
-import mongoose from "mongoose";
 import { app } from "../src/app";
-import { connectMongo } from "../src/config/mongo";
 import { StudyPlanModel } from "../src/models/StudyPlan";
 import { CompletedCourseModel } from "../src/models/CompletedCourse";
-
-let mongoServer: MongoMemoryServer;
+import { setupMongoForTests, teardownMongoForTests } from "./mongoTestSetup";
 
 beforeAll(async () => {
-  mongoServer = await MongoMemoryServer.create();
-  await connectMongo(mongoServer.getUri());
+  await setupMongoForTests();
 });
 
 afterAll(async () => {
-  await mongoose.disconnect();
-  if (mongoServer) await mongoServer.stop();
+  await teardownMongoForTests();
 });
 
 beforeEach(async () => {

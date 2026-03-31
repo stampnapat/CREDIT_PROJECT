@@ -17,6 +17,7 @@ jobs:
           - 27017:27017
     env:
       MONGO_URI: mongodb://127.0.0.1:27017/ku_credit_ci
+      USE_EXTERNAL_MONGO_FOR_TESTS: "true"
       JWT_SECRET: test-secret
       DATABASE_URL: postgresql://user:password@127.0.0.1:5432/testdb
     defaults:
