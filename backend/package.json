@@ -45,6 +45,9 @@
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.9.3"
   },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
   "jest": {
     "preset": "ts-jest",
     "testEnvironment": "node",
