@@ -36,6 +36,9 @@ else
   echo "MONGO_HOST not set. Skipping Mongo host wait (using MONGO_URI directly)."
 fi
 
+echo "Running prisma db push..."
+npx prisma db push || true
+
 echo "Running prisma migrate deploy..."
 npx prisma migrate deploy || true
 
