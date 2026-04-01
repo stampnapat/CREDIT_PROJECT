@@ -10,7 +10,34 @@ import CourseManage from './components/CourseManage';
 import EnrollmentManage from './components/EnrollmentManage';
 import UserManage from './components/UserManage';
 
-const RAW_API_BASE = (import.meta.env.VITE_API_BASE || 'http://localhost:8080').replace(/\/$/, '');
+function resolveApiBase() {
+  const fromEnv = (import.meta.env.VITE_API_BASE || '').trim().replace(/\/$/, '');
+  const isBrowser = typeof window !== 'undefined';
+  const host = isBrowser ? window.location.hostname : '';
+  const protocol = isBrowser ? window.location.protocol : 'http:';
+
+  const looksPlaceholder = /YOUR_VPS_IP|your_vps_ip|example\.com/i.test(fromEnv);
+  const looksValidHttp = /^https?:\/\//i.test(fromEnv);
+  let base = (!fromEnv || looksPlaceholder || !looksValidHttp) ? '' : fromEnv;
+
+  // Fallback when VITE_API_BASE is missing (common on first Vercel deploy)
+  if (!base) {
+    if (host === 'localhost' || host === '127.0.0.1') {
+      base = 'http://localhost:8080';
+    } else {
+      base = 'https://credit-project-aid3.onrender.com';
+    }
+  }
+
+  // Prevent mixed content on HTTPS frontend (http API gets blocked by browser)
+  if (protocol === 'https:' && base.startsWith('http://') && !base.includes('localhost')) {
+    base = base.replace('http://', 'https://');
+  }
+
+  return base.replace(/\/$/, '');
+}
+
+const RAW_API_BASE = resolveApiBase();
 export const API_BASE = `${RAW_API_BASE}/api`;
 
 /**

@@ -19,8 +19,14 @@ export default function Auth({ setStudentId, setUserRole }) {
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        alert(data.error || data.message || "เข้าสู่ระบบไม่สำเร็จ");
+        let msg = "เข้าสู่ระบบไม่สำเร็จ";
+        try {
+          const data = await res.json();
+          msg = data.error || data.message || msg;
+        } catch {
+          msg = `เซิร์ฟเวอร์ไม่พร้อมใช้งาน (HTTP ${res.status})`;
+        }
+        alert(msg);
         return;
       }
 
