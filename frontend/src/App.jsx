@@ -10,7 +10,8 @@ import CourseManage from './components/CourseManage';
 import EnrollmentManage from './components/EnrollmentManage';
 import UserManage from './components/UserManage';
 
-export const API_BASE = "http://localhost:8080/api";
+const RAW_API_BASE = (import.meta.env.VITE_API_BASE || 'http://localhost:8080').replace(/\/$/, '');
+export const API_BASE = `${RAW_API_BASE}/api`;
 
 /**
  * Helper: fetch ที่แนบ JWT token อัตโนมัติ
